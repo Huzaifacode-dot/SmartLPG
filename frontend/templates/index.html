@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartLPG - Intelligent LPG Refill Prediction & Booking System</title>
+  <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, load cell IoT telemetry, and authorized one-click booking management.">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Toast Notification Stack -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="top-header glass-panel">
+      <div class="brand-section">
+        <div class="logo-flame">🔥</div>
+        <div>
+          <h1 class="brand-title">SmartLPG</h1>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Family Details Trigger -->
+        <button class="btn-secondary" id="openFamilyModalBtn" style="display: flex; align-items: center; gap: 8px;" title="Family Demographics, Cooking Pattern &amp; Classification">
+          <span>👨‍👩‍👧‍👦</span>
+          <span>Family Details</span>
+        </button>
+
+        <!-- Audit Report Modal Trigger -->
+        <button class="btn-secondary" id="openAuditReportBtn" style="display: flex; align-items: center; gap: 8px;" title="Print/Export LPG Consumption &amp; Refill Audit Report">
+          <span>📄</span>
+          <span>Audit Report</span>
+        </button>
+
+        <!-- Alert Bell -->
+        <button class="action-btn-circle" id="alertsBellBtn" title="Alerts &amp; Notifications">
+          🔔
+          <span class="badge-count" id="unreadAlertsBadge" style="display: none;">0</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="action-btn-circle" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+          ☀️
+        </button>
+
+        <!-- Profile Settings Trigger (Icon Only) -->
+        <button class="action-btn-circle" id="openProfileModalBtn" title="Registered User &amp; Gas Provider Details" aria-label="Profile">
+          <span>👤</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Emergency Gas Leak Alert Banner (Hidden by default, activated on leak detection) -->
+    <aside class="emergency-leak-banner" id="emergencyLeakBanner">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 32px;">🚨</span>
+        <div>
+          <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 2px;">EMERGENCY: Rapid Gas Depletion / Leak Detected!</h2>
+          <p style="font-size: 13.5px;">HX711 telemetry detected abnormal gas loss (-0.48 kg / 10m). Turn off cylinder regulator valve immediately, open all kitchen windows, and avoid electrical switches.</p>
+        </div>
+      </div>
+      <button class="btn-secondary" style="background: white; color: #b91c1c; font-weight: 700; white-space: nowrap;" onclick="simulateLeakAction()">
+        ✓ Clear Leak Alert
+      </button>
+    </aside>
+
+    <!-- Smart Refill Advisory Banner -->
+    <aside class="alert-banner-card" id="alertBannerCard" style="display: none;">
+      <div class="alert-content">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <div class="alert-title" id="alertTitleText">Refill Recommended</div>
+          <div class="alert-desc" id="alertDescText">LPG reserve reaches critical threshold in 4.6 days. Considering agency lead time, booking now prevents cooking disruption.</div>
+        </div>
+      </div>
+      <button class="btn-primary" style="width: auto; padding: 10px 20px;" onclick="openModal('bookingModal')">
+        Book Refill Now
+      </button>
+    </aside>
+
+    <!-- PRIMARY DASHBOARD HERO GRID -->
+    <main class="dashboard-grid">
+
+      <!-- CARD 1: Cylinder Physical & Telemetry Level -->
+      <section class="glass-panel" id="cylinderGaugeSection">
+        <div class="card-header">
+          <div class="card-title">
+            <span>⚖️</span> Live Cylinder Telemetry
+          </div>
+          <span class="status-pill" id="cylinderStatusBadge">Active</span>
+        </div>
+        <div class="card-body">
+          <div class="cylinder-visual-wrapper">
+            <!-- 3D Styled Cylinder Tank -->
+            <div class="cylinder-3d-model" id="cylinder3DModel" title="Simulated Load Cell Gas Gauge">
+              <div class="cylinder-cap"></div>
+              <div class="cylinder-fluid-level" id="cylinderFluid" style="height: 18%;"></div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="gauge-metrics">
+              <div class="gas-percentage-display" id="gasPercentageVal">17.3%</div>
+              <div class="gas-weight-display" id="gasWeightVal">2.45 kg Net LPG</div>
+              <table class="weight-breakdown-table">
+                <tbody>
+                  <tr>
+                    <td>Gross Weight (Load Cell):</td>
+                    <td id="grossWeightVal">17.75 kg</td>
+                  </tr>
+                  <tr>
+                    <td>Cylinder Tare Weight:</td>
+                    <td id="tareWeightVal">15.30 kg</td>
+                  </tr>
+                  <tr>
+                    <td>Cylinder Serial:</td>
+                    <td id="cylSerialVal">CYL-IND-9942B</td>
+                  </tr>
+                  <tr>
+                    <td>Installed Date:</td>
+                    <td id="cylInstallDateVal">2026-09-24</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="font-size: 12px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            Hardware: HX711 24-bit ADC + 50kg Strain Gauge Load Cell Node
+          </div>
+        </div>
+      </section>
+
+      <!-- CARD 2: ML Depletion Prediction & Advisory -->
+      <section class="glass-panel" id="mlPredictionSection">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🧠</span> ML Depletion Forecasting
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="confidence-pill" id="predConfidenceVal">🎯 97% Confidence</span>
+            <span style="font-size: 11px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 4px 8px; border-radius: 6px;">
+              Random Forest (R²: 0.96)
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="prediction-highlight-box">
+            <div class="pred-days-count" id="predDaysVal">4.6 Days</div>
+            <div class="pred-label">Estimated Remaining Gas Period</div>
+          </div>
+
+          <div class="prediction-specs-grid">
+            <div class="spec-tile">
+              <div class="spec-title">Predicted Burn Rate</div>
+              <div class="spec-value" id="predBurnRateVal">0.42 kg / day</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-title">Daily Fuel Cost</div>
+              <div class="spec-value" id="predDailyCostVal" style="color: #38bdf8;">₹25.40 / day</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-title">Predicted Empty Date</div>
+              <div class="spec-value" id="predDepletionDateVal">27 Oct 2026</div>
+            </div>
+            <div class="spec-tile">
+              <div class="spec-title">Recommended Booking</div>
+              <div class="spec-value" style="color: #fbbf24;" id="predRecBookingVal">24 Oct 2026</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="quickBookRefillBtn">
+            ⚡ Book LPG Refill Now
+          </button>
+        </div>
+      </section>
+
+      <!-- CARD 3: Active Refill Booking & Live Delivery Tracker -->
+      <section class="glass-panel" id="deliveryTrackerSection">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🚚</span> Refill Delivery Tracking
+          </div>
+          <span style="font-size: 12px; color: var(--text-secondary);" id="agencyDisplay">Shanthi Indane</span>
+        </div>
+        <div class="card-body">
+          <div id="noActiveBookingState" style="display: none; text-align: center; padding: 30px 10px;">
+            <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
+            <div style="font-weight: 600; margin-bottom: 6px;">No Active Booking in Progress</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Click below to book your next refill cylinder with one click.</p>
+            <button class="btn-primary" onclick="openModal('bookingModal')">Place One-Click Order</button>
+          </div>
+
+          <div id="activeBookingState">
+            <div class="delivery-info-header">
+              <div>Ref: <strong id="trackBookingIdVal">LPG-IND-2026-9402</strong></div>
+              <div>Est. Delivery: <strong id="trackEstDeliveryVal" style="color: #38bdf8;">24 Oct 2026</strong></div>
+            </div>
+
+            <!-- Stepper -->
+            <div class="tracking-stepper">
+              <div class="step-item" id="stepItem1">
+                <div class="step-circle">1</div>
+                <div class="step-text">
+                  <div class="step-title">Order Booked</div>
+                  <div class="step-subtitle">Refill request verified by distributor</div>
+                </div>
+              </div>
+              <div class="step-item" id="stepItem2">
+                <div class="step-circle">2</div>
+                <div class="step-text">
+                  <div class="step-title">Order Confirmed</div>
+                  <div class="step-subtitle">Cash voucher generated &amp; scheduled</div>
+                </div>
+              </div>
+              <div class="step-item" id="stepItem3">
+                <div class="step-circle">3</div>
+                <div class="step-text">
+                  <div class="step-title">Dispatched from Bottling Plant</div>
+                  <div class="step-subtitle">Cylinder en route to local distribution hub</div>
+                </div>
+              </div>
+              <div class="step-item" id="stepItem4">
+                <div class="step-circle">4</div>
+                <div class="step-text">
+                  <div class="step-title">Out for Delivery</div>
+                  <div class="step-subtitle">Delivery partner arriving at your doorstep</div>
+                </div>
+              </div>
+              <div class="step-item" id="stepItem5">
+                <div class="step-circle">5</div>
+                <div class="step-text">
+                  <div class="step-title">Delivered &amp; Installed</div>
+                  <div class="step-subtitle">Cylinder connected &amp; load cell reset</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delivery Partner & Secure OTP -->
+            <div class="delivery-agent-card">
+              <div>
+                <div style="font-weight: 700; color: var(--text-primary);" id="trackAgentNameVal">Ramesh Kumar</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);" id="trackAgentPhoneVal">+91 94481 29401</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted);">Delivery OTP</div>
+                <div class="otp-pill" id="trackOtpVal">4912</div>
+              </div>
+            </div>
+
+            <button class="btn-secondary" id="advanceStatusBtn" style="width: 100%;">
+              ▶ Advance Delivery Status (Demo)
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- HARDWARE / IOT TELEMETRY & SIMULATOR CONTROLS -->
+    <section class="iot-sandbox-bar">
+      <div class="iot-status-summary">
+        <div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+          <span>📡</span> HX711 Load Cell Hardware Sandbox:
+        </div>
+        <div class="iot-chip">
+          <span style="color: var(--text-muted);">Gross Weight:</span>
+          <strong id="iotGrossWeightVal">17.75 kg</strong>
+        </div>
+        <div class="iot-chip">
+          <span style="color: var(--text-muted);">Net Gas:</span>
+          <strong id="iotNetWeightVal" style="color: #ff7700;">2.45 kg</strong>
+        </div>
+        <div class="iot-chip">
+          <span style="color: var(--text-muted);">Sensor Battery:</span>
+          <strong id="iotBatteryVal" style="color: var(--accent-emerald);">94%</strong>
+        </div>
+      </div>
+
+      <div class="iot-action-btn-group">
+        <button class="btn-secondary" id="btnSimulateCooking" title="Simulates turning on the stove and burning gas">
+          🍳 Simulate 1-Hr Cooking (-0.18 kg)
+        </button>
+        <button class="btn-secondary" id="btnSimulateLeak" style="border-color: rgba(244, 63, 94, 0.4); color: #f43f5e;" title="Triggers sudden anomalous weight drop to test leak detector">
+          ⚠️ Trigger Leak Anomaly
+        </button>
+        <button class="btn-secondary" id="btnResetCylinder" style="border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald);" title="Mounts a brand new full 14.2 kg cylinder">
+          🔄 Mount New Cylinder (14.2 kg)
+        </button>
+      </div>
+    </section>
+
+    <!-- SECONDARY SECTION: REFILL CONSUMPTION TREND & WHAT-IF ML SIMULATOR -->
+    <section class="secondary-grid">
+
+      <!-- Historical Consumption Graph -->
+      <div class="glass-panel">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📈</span> Cylinder Lifespan &amp; Depletion Analytics
+          </div>
+          <div class="chart-toggle-group">
+            <button type="button" class="chart-tab-btn active" id="tabChartHistory">History (Past 6 Cycles)</button>
+            <button type="button" class="chart-tab-btn" id="tabChartProjection">Countdown Curve</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container-box">
+            <canvas id="consumptionChartCanvas" style="width: 100%; height: 100%;"></canvas>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 14px;">
+            <span id="chartCaptionText">● Durations reflect actual days lasted per 14.2 kg cylinder</span>
+            <span>Refill Consumption Analytics Report</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI What-If Consumption Predictor -->
+      <div class="glass-panel">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔮</span> AI Consumption "What-If" Calculator
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="confidence-pill" id="simConfidenceBadge">🎯 97% Confidence</span>
+            <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 700;">Live ML Model</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="simulator-form-group">
+              <label>Household Members: <strong id="simFamilyVal">4</strong></label>
+              <input type="range" class="range-slider" id="simFamilySize" min="1" max="8" value="4">
+            </div>
+
+            <div class="simulator-form-group">
+              <label>Cooked Meals / Day: <strong id="simMealsVal">3</strong></label>
+              <input type="range" class="range-slider" id="simMeals" min="1" max="4" value="3">
+            </div>
+          </div>
+
+          <div class="simulator-form-group">
+            <label>Stove Lit Hours / Day: <strong id="simHoursVal">2.8 hrs</strong></label>
+            <input type="range" class="range-slider" id="simHours" min="0.5" max="6.0" step="0.1" value="2.8">
+          </div>
+
+          <!-- Multi-Factor Flame Intensity Selector -->
+          <div class="simulator-form-group">
+            <label>Burner Flame Intensity:</label>
+            <div class="flame-intensity-group" id="simFlameGroup">
+              <button type="button" class="flame-pill-btn" data-flame="Low">🔥 Low (Simmer)</button>
+              <button type="button" class="flame-pill-btn active" data-flame="Medium">🔥🔥 Medium (Standard)</button>
+              <button type="button" class="flame-pill-btn" data-flame="High">🔥🔥🔥 High (Intense)</button>
+            </div>
+          </div>
+
+          <!-- Cylinder Capacity Selector -->
+          <div class="simulator-form-group">
+            <label>Cylinder Specification:</label>
+            <select class="form-select" id="simCylinderCap" style="padding: 8px 12px; font-size: 13px;">
+              <option value="14.2" selected>14.2 kg Subsidized Domestic (Standard)</option>
+              <option value="5.0">5.0 kg Chhotu Domestic / Rural</option>
+              <option value="19.0">19.0 kg Commercial Cylinder</option>
+            </select>
+          </div>
+
+          <!-- Efficiency Mode Toggle Switch -->
+          <label class="toggle-switch-label">
+            <div>
+              <strong style="font-size: 13px; color: var(--text-primary);">Batch Cooking &amp; Lid Mode</strong>
+              <div style="font-size: 11.5px; color: var(--text-muted);">Saves ~15% fuel via residual heat &amp; pressure lid</div>
+            </div>
+            <input type="checkbox" id="simEfficiencyMode">
+          </label>
+
+          <div class="simulator-result-box" style="margin-top: 16px;">
+            <div>
+              <div class="sim-metric-val" id="simResultBurnRate">0.42 kg/d</div>
+              <div class="sim-metric-lbl">Daily Burn Rate</div>
+            </div>
+            <div>
+              <div class="sim-metric-val" id="simResultLongevity" style="color: #ff7700;">~33.8 Days</div>
+              <div class="sim-metric-lbl">Est. Longevity</div>
+            </div>
+            <div>
+              <div class="sim-metric-val" id="simResultDailyCost" style="color: #38bdf8;">₹25.40/d</div>
+              <div class="sim-metric-lbl">Daily Fuel Cost</div>
+            </div>
+            <div>
+              <div class="sim-metric-val" id="simResultMonthly" style="color: var(--accent-emerald);">₹762 / Mo</div>
+              <div class="sim-metric-lbl">Monthly Budget</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SECTION 3: GAS CONSERVATION & SMART ENERGY ADVISOR -->
+    <section class="glass-panel" style="margin-bottom: 32px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+          <span>💡</span> LPG Conservation &amp; Household Fuel Efficiency Advisor
+        </div>
+        <span class="confidence-pill" style="font-size: 12px;">🌱 Potential Savings: +4 to +6 Days per Cylinder</span>
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+        Empirical fuel conservation techniques modeled from domestic kitchen energy studies to reduce burn rate and lower monthly LPG expenditure.
+      </p>
+
+      <div class="advisor-grid">
+        <div class="tip-card">
+          <div>
+            <div class="tip-header">
+              <span class="tip-icon">🍲</span>
+              <div class="tip-title">Cover Pots &amp; Pressure Cook</div>
+            </div>
+            <div class="tip-body">
+              Trapping steam with tight lids reduces heat loss and accelerates boiling. Using pressure cookers for rice and pulses cuts cooking gas consumption by up to 25%.
+            </div>
+          </div>
+          <span class="tip-badge">Saves ~0.06 kg/day (₹110/mo)</span>
+        </div>
+
+        <div class="tip-card">
+          <div>
+            <div class="tip-header">
+              <span class="tip-icon">🔥</span>
+              <div class="tip-title">Flame Base Calibration</div>
+            </div>
+            <div class="tip-body">
+              Regulate burner flames to remain completely underneath the pot base. Flames licking up vessel sides dissipate into ambient kitchen air without heating food.
+            </div>
+          </div>
+          <span class="tip-badge">Prevents 15–18% Fuel Waste</span>
+        </div>
+
+        <div class="tip-card">
+          <div>
+            <div class="tip-header">
+              <span class="tip-icon">💧</span>
+              <div class="tip-title">Pre-Soaking &amp; Defrosting</div>
+            </div>
+            <div class="tip-body">
+              Soak lentils, beans, and grains in water for 30 minutes before lighting the stove. Always bring refrigerated foods to room temperature before cooking.
+            </div>
+          </div>
+          <span class="tip-badge">Cuts Stove Time by ~20%</span>
+        </div>
+
+        <div class="tip-card">
+          <div>
+            <div class="tip-header">
+              <span class="tip-icon">📦</span>
+              <div class="tip-title">Batch Cooking Strategy</div>
+            </div>
+            <div class="tip-body">
+              Prepare multiple dishes back-to-back while burners and vessel racks remain hot. Utilizing residual thermal energy avoids cold burner reheating cycles.
+            </div>
+          </div>
+          <span class="tip-badge">+3.8 Extra Days Lifespan</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFILL HISTORY TABLE & EXPENSE ANALYTICS -->
+    <section class="glass-panel" style="margin-bottom: 32px;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📜</span> Cylinder Refill History &amp; Usage Logs
+        </div>
+        <div style="display: flex; gap: 24px; font-size: 13px;">
+          <div>Total Refills: <strong id="metricTotalRefills" style="color: var(--text-primary);">6</strong></div>
+          <div>Total Spent: <strong id="metricTotalSpent" style="color: var(--accent-emerald);">₹5,135</strong></div>
+          <div>Avg Lifespan: <strong id="metricAvgCycle" style="color: #38bdf8;">34.0 Days</strong></div>
+          <div>Avg Burn: <strong id="metricAvgBurn" style="color: #ff7700;">0.418 kg/d</strong></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Booking Ref</th>
+                <th>Booking Date</th>
+                <th>Delivery Date</th>
+                <th>LPG Agency</th>
+                <th>Amount</th>
+                <th>Days Lasted</th>
+                <th>Avg Daily Burn</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="refillHistoryTbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="text-align: center; font-size: 13px; color: var(--text-muted); padding: 16px 0;">
+      <div>SmartLPG • Intelligent LPG Refill Prediction and Booking System</div>
+      <div style="font-size: 12px; margin-top: 4px;">
+        Designed &amp; Developed for Societal Based Mini Project (24CSE57) • Guide: Prof. Ashwini G B
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MODAL 1: ONE-CLICK REFILL BOOKING -->
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">⚡ Instant LPG Refill Booking</div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <form id="bookingForm">
+        <div class="modal-body">
+          <div class="form-field">
+            <label>Authorized LPG Provider</label>
+            <select class="form-select" id="bookProviderSelect">
+              <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
+              <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
+              <option value="HP Gas (HPCL)">HP Gas (HPCL)</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Consumer Number</label>
+            <input type="text" class="form-input" id="bookConsumerInput" value="IND-7492810" readonly>
+          </div>
+
+          <div class="form-field">
+            <label>Cylinder Specification</label>
+            <input type="text" class="form-input" value="14.2 kg Subsidized Domestic Cylinder" readonly>
+          </div>
+
+          <div class="form-field">
+            <label>Payment Method</label>
+            <select class="form-select" id="bookPaymentSelect">
+              <option value="UPI (Google Pay / PhonePe)">UPI (Google Pay / PhonePe / Paytm)</option>
+              <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+              <option value="Net Banking / Credit Card">Net Banking / Credit Card</option>
+            </select>
+          </div>
+
+          <div style="background: rgba(255, 119, 0, 0.08); border: 1px solid rgba(255, 119, 0, 0.25); border-radius: var(--radius-md); padding: 14px; margin-top: 14px; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Subsidized Refill Rate:</span>
+              <strong>₹858.00</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Estimated Delivery Window:</span>
+              <strong style="color: #38bdf8;">2–3 Business Days</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Delivery Verification:</span>
+              <strong style="color: var(--accent-emerald);">Secure OTP at Doorstep</strong>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Confirm &amp; Book Refill</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: REGISTERED USER & GAS PROVIDER PROFILE -->
+  <div class="modal-backdrop" id="profileModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">👤 Registered User &amp; Gas Provider Profile</div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <form id="profileForm">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          <!-- Registered User Summary Card -->
+          <div class="profile-summary-header">
+            <div class="profile-avatar-circle">👤</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h3 id="profileSummaryName" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Mohammed Huzaifa Khan</h3>
+                <span class="badge-status delivered" style="font-size: 11px;">✓ Registered Active</span>
+              </div>
+              <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
+                Primary Mobile: <strong id="profileSummaryPhone" style="color: var(--accent-cyan);">+91 98765 43210</strong> &bull; Consumer ID: <strong id="profileSummaryConsumer" style="color: #ff7700;">IND-7492810</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 1: Registered User Details -->
+          <div class="form-section-header">
+            <span class="form-section-icon">📋</span>
+            <span class="form-section-title">Registered User Information</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>Full Name (Registered Consumer)</label>
+              <input type="text" class="form-input" id="profileFullName" placeholder="e.g. Mohammed Huzaifa Khan" required>
+            </div>
+            <div class="form-field">
+              <label>Registered Mobile Number</label>
+              <input type="tel" class="form-input" id="profileMobile" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>Registered Email ID</label>
+              <input type="email" class="form-input" id="profileEmail" placeholder="consumer@example.com" required>
+            </div>
+            <div class="form-field">
+              <label>Registered Connection Type</label>
+              <select class="form-select" id="profileConnectionType">
+                <option value="14.2 kg Subsidized Domestic (Single Cylinder)">14.2 kg Subsidized Domestic (Single Cylinder)</option>
+                <option value="14.2 kg Double Cylinder Connection (DBC)">14.2 kg Double Cylinder Connection (DBC)</option>
+                <option value="19.0 kg Commercial Connection">19.0 kg Commercial Connection</option>
+                <option value="5.0 kg Chhotu Domestic Connection">5.0 kg Chhotu Domestic Connection</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Installation &amp; Delivery Address</label>
+            <input type="text" class="form-input" id="profileAddress" placeholder="Flat / House No., Street, City, Pincode" required>
+          </div>
+
+          <!-- Section 2: Registered Gas Provider Details -->
+          <div class="form-section-header" style="margin-top: 24px;">
+            <span class="form-section-icon">⛽</span>
+            <span class="form-section-title">Registered Gas Provider Details</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>Authorized LPG Company / Provider</label>
+              <select class="form-select" id="profileProvider">
+                <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
+                <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
+                <option value="HP Gas (HPCL)">HP Gas (HPCL)</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>LPG Consumer Number / SV No.</label>
+              <input type="text" class="form-input" id="profileConsumerNo" placeholder="e.g. IND-7492810" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>Distributor Agency Name</label>
+              <input type="text" class="form-input" id="profileDistributor" placeholder="e.g. Shanthi Indane Gas Services" required>
+            </div>
+            <div class="form-field">
+              <label>Agency Contact / Helpline Phone</label>
+              <input type="tel" class="form-input" id="profileDistributorPhone" placeholder="e.g. +91 80 2520 1199">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Agency Refill Delivery Lead Time (Days)</label>
+            <input type="number" class="form-input" id="profileLeadTime" min="1" max="7" value="3" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Save Profile Details</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: USER'S FAMILY & HOUSEHOLD CLASSIFICATION -->
+  <div class="modal-backdrop" id="familyModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">👨‍👩‍👧‍👦 User's Family &amp; Household Profile</div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <form id="familyForm">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          
+          <!-- SECTION 1: Household Classification -->
+          <div class="form-section-header">
+            <span class="form-section-icon">🏷️</span>
+            <span class="form-section-title">Household Classification</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px;">
+            Select your household or commercial category:
+          </p>
+
+          <input type="hidden" id="famHouseholdClassification" value="Family Household">
+
+          <div class="classification-grid" id="classificationGrid">
+            <!-- Option 1: Single Person -->
+            <div class="classification-card" data-classification="Single Person" data-purpose="Household" data-members="1" data-adults="1" data-children="0">
+              <div class="classification-icon">🧑</div>
+              <div class="classification-title">Single Person</div>
+              <div class="classification-desc">1 individual</div>
+            </div>
+
+            <!-- Option 2: Family Household -->
+            <div class="classification-card active" data-classification="Family Household" data-purpose="Household" data-members="4" data-adults="2" data-children="2">
+              <div class="classification-icon">👨‍👩‍👧‍👦</div>
+              <div class="classification-title">Family Household</div>
+              <div class="classification-desc">Parents &amp; Kids</div>
+            </div>
+
+            <!-- Option 3: Shared Apartment -->
+            <div class="classification-card" data-classification="Shared Apartment" data-purpose="Household" data-members="3" data-adults="3" data-children="0">
+              <div class="classification-icon">🏢</div>
+              <div class="classification-title">Shared Apartment</div>
+              <div class="classification-desc">Flatmates</div>
+            </div>
+
+            <!-- Option 4: Restaurant / Eatery -->
+            <div class="classification-card" data-classification="Restaurant / Eatery" data-purpose="Commercial" data-capacity="19.0">
+              <div class="classification-icon">🍽️</div>
+              <div class="classification-title">Restaurant / Eatery</div>
+              <div class="classification-desc">Commercial scale</div>
+            </div>
+
+            <!-- Option 5: Small Business -->
+            <div class="classification-card" data-classification="Small Business" data-purpose="Commercial" data-capacity="19.0">
+              <div class="classification-icon">🏬</div>
+              <div class="classification-title">Small Business</div>
+              <div class="classification-desc">Office / Bakery</div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Commercial / Household Purpose Selector -->
+          <div class="form-section-header" style="margin-top: 24px;">
+            <span class="form-section-icon">🎯</span>
+            <span class="form-section-title">Gas Usage Purpose</span>
+          </div>
+          <div class="purpose-pill-group">
+            <button type="button" class="purpose-pill-btn active" id="purposeHouseholdBtn" data-purpose="Household">
+              🏠 Household Purpose
+            </button>
+            <button type="button" class="purpose-pill-btn" id="purposeCommercialBtn" data-purpose="Commercial">
+              🏢 Commercial Purpose
+            </button>
+          </div>
+          <input type="hidden" id="famUsagePurpose" value="Household">
+
+          <!-- SECTION 3: Demographics & Cooking Duration -->
+          <div class="form-section-header" style="margin-top: 24px;">
+            <span class="form-section-icon">👥</span>
+            <span class="form-section-title">Family Demographics &amp; Cooking Habits</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>People in Family (Total)</label>
+              <input type="number" class="form-input" id="famTotalMembers" min="1" max="30" value="4" required>
+            </div>
+            <div class="form-field">
+              <label>Number of Adults</label>
+              <input type="number" class="form-input" id="famAdultsCount" min="1" max="25" value="2" required>
+            </div>
+            <div class="form-field">
+              <label>Number of Children</label>
+              <input type="number" class="form-input" id="famChildrenCount" min="0" max="25" value="2" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>How Long They Cook (Hours / Day)</label>
+              <input type="number" step="0.1" class="form-input" id="famCookingHours" min="0.5" max="18.0" value="2.8" required>
+            </div>
+            <div class="form-field">
+              <label>Cooked Meals / Day</label>
+              <input type="number" class="form-input" id="famMealsPerDay" min="1" max="6" value="3" required>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Cylinder Specification & Refill Pricing -->
+          <div class="form-section-header" style="margin-top: 24px;">
+            <span class="form-section-icon">⛽</span>
+            <span class="form-section-title">Cylinder Capacity, Pricing &amp; Last Refill Date</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+            <div class="form-field">
+              <label>Gas Cylinder Capacity</label>
+              <select class="form-select" id="famCylinderCapacity">
+                <option value="14.2">14.2 kg Subsidized Domestic</option>
+                <option value="19.0">19.0 kg Commercial Cylinder</option>
+                <option value="5.0">5.0 kg Chhotu Domestic / Rural</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Date of Last Refill</label>
+              <input type="date" class="form-input" id="famLastRefillDate" value="2026-10-12" required>
+            </div>
+            <div class="form-field">
+              <label>Current Refill Price (₹)</label>
+              <input type="number" step="0.5" class="form-input" id="famRefillPrice" value="858.00" required>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Save &amp; Recalibrate Model</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: NOTIFICATIONS & ALERTS LIST -->
+  <div class="modal-backdrop" id="alertsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">🔔 Alerts &amp; Notification History</div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 0; max-height: 400px; overflow-y: auto;" id="alertsListContainer">
+        <!-- Dynamically rendered -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary close-modal-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: OFFICIAL LPG CONSUMPTION & REFILL AUDIT REPORT -->
+  <div class="modal-backdrop" id="auditReportModal">
+    <div class="modal-dialog report-modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">📄 Official LPG Refill &amp; Telemetry Audit Report</div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="window.print()">🖨️ Print / Save PDF</button>
+          <button type="button" class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 16px; overflow-y: auto;">
+        <div class="report-printable-area" id="reportPrintableArea">
+          <!-- Report Header -->
+          <div class="report-header-banner">
+            <div>
+              <div style="font-size: 20px; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--flame-start);">SmartLPG Official Audit Report</div>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Societal Based Mini Project (Course Code: 24CSE57) • Semester V</div>
+              <div style="font-size: 12px; color: var(--text-secondary);">Department of Computer Science &amp; Engineering</div>
+              <div style="font-size: 12px; margin-top: 4px;"><strong>Guide:</strong> Prof. Ashwini G B &nbsp;|&nbsp; <strong>Date:</strong> <span id="reportAuditDate">2026-10-26</span></div>
+            </div>
+            <div style="text-align: right; font-size: 12px;">
+              <div style="font-weight: 700;">Student USNs &amp; Names:</div>
+              <div>Mohammed Huzaifa Khan (1NH24CS126)</div>
+              <div>Mohammad Aftab Ahmed (1NH24CS125)</div>
+              <div style="margin-top: 6px; font-size: 11px; color: var(--accent-emerald);">● VERIFIED BY SMART-IOT TELEMETRY</div>
+            </div>
+          </div>
+
+          <!-- Household & Distributor Identity -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; font-size: 12.5px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div>
+              <div><strong>Primary Consumer:</strong> <span id="reportConsumerName">Mohammed Huzaifa Khan</span></div>
+              <div><strong>Consumer No:</strong> <span id="reportConsumerId">IND-7492810</span></div>
+              <div><strong>Address:</strong> <span id="reportAddress">Indiranagar, Bengaluru, KA 560038</span></div>
+            </div>
+            <div>
+              <div><strong>LPG Provider:</strong> <span id="reportProvider">Indane Gas (IOCL)</span></div>
+              <div><strong>Authorized Agency:</strong> <span id="reportDistributor">Shanthi Indane Gas Services</span></div>
+              <div><strong>Tariff Rate:</strong> ₹858.00 / 14.2 kg Subsidized Refill</div>
+            </div>
+          </div>
+
+          <!-- Key Performance Indicators Grid -->
+          <div class="report-kpi-grid">
+            <div class="report-kpi-box">
+              <div class="report-kpi-val" id="reportGrossWeight">17.75 kg</div>
+              <div class="report-kpi-lbl">Gross Load Cell Weight</div>
+            </div>
+            <div class="report-kpi-box">
+              <div class="report-kpi-val" id="reportNetLpg" style="color: #ff7700;">2.45 kg</div>
+              <div class="report-kpi-lbl">Current Net LPG</div>
+            </div>
+            <div class="report-kpi-box">
+              <div class="report-kpi-val" id="reportDaysRemaining" style="color: #38bdf8;">4.6 Days</div>
+              <div class="report-kpi-lbl">Remaining Fuel Time</div>
+            </div>
+            <div class="report-kpi-box">
+              <div class="report-kpi-val" id="reportDailyBurn">0.42 kg/d</div>
+              <div class="report-kpi-lbl">Daily Burn Rate</div>
+            </div>
+          </div>
+
+          <!-- ML Prediction & Forecast Timeline -->
+          <div style="margin: 16px 0; padding: 14px; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; font-size: 13px;">
+            <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px;">🧠 Random Forest Model Depletion &amp; Refill Recommendations</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>Predicted Exhaustion Date: <strong id="reportDepletionDate">27 Oct 2026</strong></div>
+              <div>Buffer Booking Window: <strong id="reportBookingDate" style="color: #fbbf24;">24 Oct 2026</strong></div>
+              <div>Agency Lead Time: <strong>3 Days Delivery Buffer</strong></div>
+              <div>Model Confidence: <strong style="color: var(--accent-emerald);">97% Statistical High Confidence</strong></div>
+            </div>
+          </div>
+
+          <!-- Refill Cycle History Table -->
+          <div style="font-weight: 700; margin-bottom: 6px; font-size: 13px;">Past Refill Lifespan &amp; Consumption Log:</div>
+          <table class="custom-table" style="font-size: 12px; margin-bottom: 16px;">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Booking Date</th>
+                <th>Delivery Date</th>
+                <th>Amount</th>
+                <th>Days Lasted</th>
+                <th>Daily Avg</th>
+              </tr>
+            </thead>
+            <tbody id="reportHistoryTbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+
+          <!-- Hardware & Safety Verification Section -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 12px; font-size: 12px; color: var(--text-secondary);">
+            <div>Hardware: HX711 24-bit ADC Strain Gauge • ESP32 Wireless Telemetry Node</div>
+            <div>Safety Anomaly Detector: <strong style="color: var(--accent-emerald);">NORMAL (No Gas Leaks)</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary close-modal-btn">Close</button>
+        <button type="button" class="btn-primary" onclick="window.print()">Print Audit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript App Logic -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

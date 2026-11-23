@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLPG - Review 1 Prototype (40% Implementation)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Top Milestone Bar -->
+    <header class="milestone-banner">
+        <div class="banner-container">
+            <div class="banner-left">
+                <span class="badge badge-accent"><i class="fa-solid fa-flag-checkered"></i> REVIEW 1 PROTOTYPE</span>
+                <span class="badge badge-progress"><i class="fa-solid fa-chart-pie"></i> 40% IMPLEMENTATION FUNCTIONAL</span>
+                <span class="badge badge-tech"><i class="fa-solid fa-brain"></i> SENSOR-FREE DATA DRIVEN</span>
+            </div>
+            <div class="banner-right">
+                <span class="project-info">Course: <strong>24CSE57</strong> | Guide: <strong>Prof. Ashwini G B</strong></span>
+                <button id="viewScopeBtn" class="btn btn-outline-sm"><i class="fa-solid fa-circle-info"></i> Review 1 Scope</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>SmartLPG <span class="version-tag">v0.4-dev</span></h1>
+                    <p>Machine Learning Domestic LPG Depletion & Booking Forecasting</p>
+                </div>
+            </div>
+            <div class="nav-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Team:</span>
+                    <span class="meta-val">Huzaifa (126) & Aftab (125)</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">ML Accuracy:</span>
+                    <span class="meta-val highlight-green">R² = 0.9634</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard-wrapper">
+        <!-- Status Alert Ribbon -->
+        <div id="alertRibbon" class="alert-ribbon alert-warning">
+            <div class="alert-icon-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="alert-content">
+                <h4 id="alertTitle">Refill Advisory Active</h4>
+                <p id="alertMessage">Calculating depletion status based on household consumption parameters...</p>
+            </div>
+            <div class="alert-action">
+                <span class="status-pill" id="urgencyBadge">CALCULATING</span>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Left Column: 40% Active Inputs -->
+            <section class="card input-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-sliders text-accent"></i>
+                        <h3>Household Profile & Consumption Factors</h3>
+                    </div>
+                    <span class="badge badge-green">Review 1 Active</span>
+                </div>
+                <p class="card-desc">
+                    Sensor-free mathematical modeling. Enter demographic cooking variables to compute daily burn rate using the trained Random Forest model ($N=600$).
+                </p>
+
+                <form id="predictionForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="cylinderCapacity">
+                            <i class="fa-solid fa-gas-pump"></i> Cylinder Capacity (kg)
+                        </label>
+                        <select id="cylinderCapacity" class="form-control">
+                            <option value="14.2" selected>14.2 kg (Standard Domestic)</option>
+                            <option value="5.0">5.0 kg (Mini / Chhotu)</option>
+                            <option value="19.0">19.0 kg (Commercial)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="refillDate">
+                            <i class="fa-regular fa-calendar-days"></i> Last Refill Date
+                        </label>
+                        <input type="date" id="refillDate" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="familySize">
+                            <i class="fa-solid fa-people-roof"></i> Family Members: <span id="familySizeVal" class="val-display">4 persons</span>
+                        </label>
+                        <input type="range" id="familySize" min="1" max="8" value="4" class="range-slider">
+                        <div class="range-ticks">
+                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mealsPerDay">
+                            <i class="fa-solid fa-utensils"></i> Meals Cooked Daily: <span id="mealsPerDayVal" class="val-display">3 meals</span>
+                        </label>
+                        <input type="range" id="mealsPerDay" min="1" max="4" value="3" class="range-slider">
+                        <div class="range-ticks">
+                            <span>1</span><span>2</span><span>3</span><span>4</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cookingHours">
+                            <i class="fa-solid fa-stopwatch"></i> Stove Burn Time: <span id="cookingHoursVal" class="val-display">2.8 hrs/day</span>
+                        </label>
+                        <input type="range" id="cookingHours" min="0.5" max="6.0" step="0.1" value="2.8" class="range-slider">
+                        <div class="range-ticks">
+                            <span>0.5h</span><span>2.0h</span><span>3.5h</span><span>5.0h</span><span>6.0h</span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-half">
+                            <label for="flameIntensity">
+                                <i class="fa-solid fa-fire"></i> Flame Habit
+                            </label>
+                            <select id="flameIntensity" class="form-control">
+                                <option value="Low">Low / Simmer (-12%)</option>
+                                <option value="Medium" selected>Medium / Optimal</option>
+                                <option value="High">High / Rapid (+18%)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-half">
+                            <label for="leadTime">
+                                <i class="fa-solid fa-truck-fast"></i> Lead Time
+                            </label>
+                            <select id="leadTime" class="form-control">
+                                <option value="2">2 Days</option>
+                                <option value="3" selected>3 Days (Avg)</option>
+                                <option value="4">4 Days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="recalculateBtn" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-bolt"></i> Recompute Depletion Curve
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Column: 40% Live Telemetry & Forecast Results -->
+            <section class="card results-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-gauge-high text-accent"></i>
+                        <h3>Estimated Depletion & Burn Rate Telemetry</h3>
+                    </div>
+                    <span class="badge badge-accent">Review 1 Functional</span>
+                </div>
+
+                <!-- Gauge & Key Metric -->
+                <div class="gauge-display-container">
+                    <div class="radial-gauge-box">
+                        <svg class="circular-progress" viewBox="0 0 160 160">
+                            <circle class="circle-bg" cx="80" cy="80" r="70"></circle>
+                            <circle class="circle-fill" id="gaugeCircle" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="150"></circle>
+                        </svg>
+                        <div class="gauge-text">
+                            <span class="gauge-val" id="percentRemaining">26.8%</span>
+                            <span class="gauge-unit">LPG Remaining</span>
+                        </div>
+                    </div>
+
+                    <div class="countdown-hero-box">
+                        <span class="countdown-label">Days to Empty Forecast</span>
+                        <div class="countdown-number">
+                            <span id="daysRemaining">6.2</span>
+                            <span class="unit">Days</span>
+                        </div>
+                        <div class="depletion-timestamp">
+                            <i class="fa-regular fa-clock"></i> Projected Empty: <strong id="depletionDate">01 Nov 2026</strong>
+                        </div>
+                        <div class="booking-timestamp">
+                            <i class="fa-solid fa-calendar-check"></i> Refill Order Window: <strong id="bookingWindow">29 Oct 2026</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Sub-metrics cards -->
+                <div class="sub-metrics-grid">
+                    <div class="metric-chip">
+                        <div class="chip-icon bg-orange"><i class="fa-solid fa-weight-scale"></i></div>
+                        <div class="chip-data">
+                            <span class="chip-title">Remaining Weight</span>
+                            <span class="chip-val" id="kgRemaining">3.81 kg</span>
+                        </div>
+                    </div>
+                    <div class="metric-chip">
+                        <div class="chip-icon bg-purple"><i class="fa-solid fa-fire-burner"></i></div>
+                        <div class="chip-data">
+                            <span class="chip-title">Predicted Burn Rate</span>
+                            <span class="chip-val" id="burnRate">0.485 kg/day</span>
+                        </div>
+                    </div>
+                    <div class="metric-chip">
+                        <div class="chip-icon bg-blue"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div class="chip-data">
+                            <span class="chip-title">Days Consumed</span>
+                            <span class="chip-val" id="daysConsumed">22 Days</span>
+                        </div>
+                    </div>
+                    <div class="metric-chip">
+                        <div class="chip-icon bg-teal"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="chip-data">
+                            <span class="chip-title">Delivery Lead Buffer</span>
+                            <span class="chip-val" id="leadBuffer">3 Days Lead Time</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mathematical / Algorithmic Transparency Box -->
+                <div class="math-proof-box">
+                    <div class="proof-header">
+                        <i class="fa-solid fa-square-root-variable"></i>
+                        <span>Underlying ML & Mathematical Estimation Proof</span>
+                    </div>
+                    <div class="proof-content">
+                        <code>BurnRate(kg/d) = RandomForest(demographics) = <span id="mathBurnRate">0.485</span> kg/d</code><br>
+                        <code>RemainingGas = Capacity - (DaysElapsed × BurnRate) = <span id="mathRemaining">3.81</span> kg</code><br>
+                        <code>DaysToDepletion = RemainingGas / BurnRate = <span id="mathDays">6.2</span> Days</code>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Section 3: Review 2 Planned Modules (60% Scope) -->
+        <section class="review2-section">
+            <div class="review2-header">
+                <div class="header-left">
+                    <span class="badge badge-locked"><i class="fa-solid fa-lock"></i> REVIEW 2 SCOPE (60% REMAINING)</span>
+                    <h3>Planned Implementation Roadmap for Mini Project Review 2</h3>
+                </div>
+                <span class="roadmap-note">These modules represent the subsequent 60% engineering milestones scheduled for Review 2</span>
+            </div>
+
+            <div class="review2-cards-grid">
+                <!-- Locked Card 1 -->
+                <div class="card locked-card">
+                    <div class="lock-indicator"><i class="fa-solid fa-lock"></i> Review 2</div>
+                    <div class="card-body">
+                        <div class="card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <h4>One-Click OMC Automated Booking</h4>
+                        <p>Direct API integration with Indian Oil, Bharat Petroleum, and HP Gas distributor booking portals for automated cylinder requisitioning.</p>
+                        <span class="status-tag tag-planned">Planned Milestone 4</span>
+                    </div>
+                </div>
+
+                <!-- Locked Card 2 -->
+                <div class="card locked-card">
+                    <div class="lock-indicator"><i class="fa-solid fa-lock"></i> Review 2</div>
+                    <div class="card-body">
+                        <div class="card-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                        <h4>5-Stage Delivery Tracking & OTP</h4>
+                        <p>Real-time lifecycle stepper tracking (Order Placed &rarr; Confirmed &rarr; Dispatched &rarr; Out for Delivery &rarr; Delivered) with doorstep OTP verification.</p>
+                        <span class="status-tag tag-planned">Planned Milestone 5</span>
+                    </div>
+                </div>
+
+                <!-- Locked Card 3 -->
+                <div class="card locked-card">
+                    <div class="lock-indicator"><i class="fa-solid fa-lock"></i> Review 2</div>
+                    <div class="card-body">
+                        <div class="card-icon"><i class="fa-solid fa-comment-sms"></i></div>
+                        <h4>Cellular SMS & WhatsApp Gateways</h4>
+                        <p>Twilio and cellular SMS dispatch for automated multi-channel refill warnings, critical alerts, and order confirmations.</p>
+                        <span class="status-tag tag-planned">Planned Milestone 5</span>
+                    </div>
+                </div>
+
+                <!-- Locked Card 4 -->
+                <div class="card locked-card">
+                    <div class="lock-indicator"><i class="fa-solid fa-lock"></i> Review 2</div>
+                    <div class="card-body">
+                        <div class="card-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                        <h4>Energy Audit Report & PDF Generator</h4>
+                        <p>Automated generation of formal monthly household consumption audits, wastage analysis, and official submission documentation.</p>
+                        <span class="status-tag tag-planned">Planned Milestone 6</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Review 1 Scope & Details -->
+    <div id="scopeModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-clipboard-check text-accent"></i>
+                    <h3>Mini Project Review 1 Scope & Implementation Plan</h3>
+                </div>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta-table">
+                    <div class="meta-row"><span>Course:</span><strong>24CSE57 - Societal Based Mini Project (Sem V)</strong></div>
+                    <div class="meta-row"><span>Project Guide:</span><strong>Prof. Ashwini G B</strong></div>
+                    <div class="meta-row"><span>Students:</span><strong>Mohammed Huzaifa Khan (1NH24CS126) & Mohammad Aftab Ahmed (1NH24CS125)</strong></div>
+                    <div class="meta-row"><span>Milestone Status:</span><span class="badge badge-progress">40% Functional (Review 1 Baseline)</span></div>
+                </div>
+
+                <h4 class="modal-subheading"><i class="fa-solid fa-circle-check text-green"></i> 40% Completed Features (Review 1):</h4>
+                <ul class="modal-list check-list">
+                    <li><strong>Sensor-Free Domestic Energy Dataset:</strong> Synthesized N=600 household profiles incorporating family size, meals, flame habit, and burner hours.</li>
+                    <li><strong>Scikit-Learn ML Burn Rate Model:</strong> Trained Random Forest Regressor yielding $R^2 \approx 0.9634$ accuracy on test validation.</li>
+                    <li><strong>Real-Time Depletion Timeline:</strong> Mathematical calculation of gas consumed, remaining kilograms, percentage, and estimated depletion timestamp.</li>
+                    <li><strong>Delivery Lead-Time Buffer Alert:</strong> Dynamic warning banner triggered when remaining days approach distributor delivery lead time.</li>
+                </ul>
+
+                <h4 class="modal-subheading"><i class="fa-solid fa-clock-rotate-left text-accent"></i> 60% Planned Work (Review 2 Roadmap):</h4>
+                <ul class="modal-list lock-list">
+                    <li>One-Click OMC distributor booking API integration.</li>
+                    <li>5-stage interactive delivery tracking lifecycle with doorstep OTP verification.</li>
+                    <li>Twilio cellular SMS & WhatsApp notification gateways.</li>
+                    <li>Downloadable household LPG consumption PDF audit report.</li>
+                    <li>Final thesis documentation and plagiarism check.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModalFooterBtn" class="btn btn-primary">Understood</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>SmartLPG &copy; 2026. Department of Computer Science & Engineering, New Horizon College of Engineering.</p>
+            <p class="footer-sub">Review 1 Demonstration Prototype | 40% Functional Milestone</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

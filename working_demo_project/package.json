@@ -1,0 +1,18 @@
+{
+  "name": "smart-gas-refill-predictor-backup",
+  "version": "1.0.0",
+  "description": "Local backup of Smart Gas Refill Predictor (https://smart-gas-refill-predictor.vercel.app/)",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -s . -p 8080",
+    "serve": "python serve.py"
+  },
+  "keywords": [
+    "lpg",
+    "gas-refill-predictor",
+    "backup",
+    "smart-lpg"
+  ],
+  "author": "Enoch Oyewo / Cloned for SmartLPG Project Backup",
+  "license": "MIT"
+}

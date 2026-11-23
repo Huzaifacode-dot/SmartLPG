@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://smart-gas-refill-predictor.vercel.app/sitemap.xml
