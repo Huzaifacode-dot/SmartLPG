@@ -6,20 +6,21 @@ from datetime import datetime, timedelta
 DB_DIR = os.path.dirname(__file__)
 SOURCE_DB = os.path.join(DB_DIR, "smart_lpg.db")
 
-# In serverless environments like Vercel, the app root is read-only.
-# We use /tmp to allow SQLite read/write operations and copy the seed DB if needed.
-if os.environ.get("VERCEL"):
-    DB_PATH = "/tmp/smart_lpg.db"
-    if not os.path.exists(DB_PATH) and os.path.exists(SOURCE_DB):
-        try:
-            shutil.copy2(SOURCE_DB, DB_PATH)
-        except Exception:
-            pass
-else:
-    DB_PATH = SOURCE_DB
+def get_db_path():
+    # In serverless environments like Vercel, the app root is read-only.
+    # We copy the database to /tmp to allow SQLite read/write operations.
+    if os.environ.get("VERCEL"):
+        db_path = "/tmp/smart_lpg.db"
+        if not os.path.exists(db_path) and os.path.exists(SOURCE_DB):
+            try:
+                shutil.copy2(SOURCE_DB, db_path)
+            except Exception:
+                pass
+        return db_path
+    return SOURCE_DB
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn = sqlite3.connect(get_db_path(), timeout=30.0)
     conn.row_factory = sqlite3.Row
     return conn
 

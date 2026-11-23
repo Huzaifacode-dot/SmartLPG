@@ -73,14 +73,17 @@ def train_and_save_model():
     
     print(f"Model trained successfully! R² Score: {r2:.4f}, RMSE: {rmse:.4f} kg/day")
     
-    joblib.dump({
-        "model": model,
-        "features": list(X.columns),
-        "r2_score": r2,
-        "rmse": rmse,
-        "trained_at": datetime.now().isoformat()
-    }, MODEL_PATH)
-    print(f"Model saved to {MODEL_PATH}")
+    try:
+        joblib.dump({
+            "model": model,
+            "features": list(X.columns),
+            "r2_score": r2,
+            "rmse": rmse,
+            "trained_at": datetime.now().isoformat()
+        }, MODEL_PATH)
+        print(f"Model saved to {MODEL_PATH}")
+    except Exception as e:
+        print(f"Notice: Could not write model to disk (serverless read-only filesystem): {e}")
     return model
 
 def load_or_train_model():
