@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Ensure root directory is on sys.path
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import random
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, send_from_directory
@@ -9,7 +16,6 @@ from backend.ml_model import predict_consumption, compute_refill_analytics
 from backend.iot_simulator import IoTSimulator
 
 # Base directories
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "frontend", "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "frontend", "static")
 

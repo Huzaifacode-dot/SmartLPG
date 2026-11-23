@@ -1,0 +1,9 @@
+[project]
+name = "smart-lpg"
+version = "1.0.0"
+description = "SmartLPG Refill Prediction and Booking System"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.vercel]
+entrypoint = "backend/app.py"
