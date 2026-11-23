@@ -27,6 +27,8 @@ init_db()
 
 # ----------------- WEB PAGES -----------------
 @app.route("/")
+@app.route("/api")
+@app.route("/api/index")
 def index():
     return render_template("index.html")
 
