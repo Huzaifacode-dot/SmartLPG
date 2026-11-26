@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartLPG - Intelligent LPG Refill Prediction & Booking System</title>
   <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, consumption analytics, and authorized one-click booking management.">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -17,7 +18,7 @@
     <!-- Top Navigation Header -->
     <header class="top-header glass-panel">
       <div class="brand-section">
-        <div class="logo-flame">🔥</div>
+        <img src="/static/images/logo.png" alt="SmartLPG Cylinder Mascot" class="brand-mascot-logo" id="navBrandLogo">
         <div>
           <h1 class="brand-title">
             SmartLPG
@@ -62,6 +63,12 @@
           ☀️
         </button>
 
+        <!-- User Authentication & Account Trigger -->
+        <button class="btn-secondary" id="openLoginModalBtn" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; border-color: rgba(255, 119, 0, 0.35); color: #ff7700; font-weight: 700;" title="User Login &amp; Account Settings">
+          <span>🔐</span>
+          <span id="navUserBtnText">Sign In</span>
+        </button>
+
         <!-- Profile Settings Trigger (Icon Only) -->
         <button class="action-btn-circle" id="openProfileModalBtn" title="Registered User &amp; Gas Provider Details" aria-label="Profile">
           <span>👤</span>
@@ -71,27 +78,38 @@
 
     <!-- LANDING HERO SECTION (AI Multi-Factor LPG Depletion Forecaster) -->
     <section class="landing-hero-card" id="landingHeroSection">
-      <div class="landing-badge-pill">
-        <span>✨ Multi-Factor LPG Gas Consumption Modeling</span>
-      </div>
+      <div class="landing-hero-content-wrap">
+        <div class="landing-hero-text">
+          <div class="landing-badge-pill">
+            <span>✨ Multi-Factor LPG Gas Consumption Modeling</span>
+          </div>
 
-      <h1 class="landing-hero-headline">
-        Know When Your Gas Will Finish<br>
-        <span class="headline-gradient">— Before It Does.</span>
-      </h1>
+          <h1 class="landing-hero-headline">
+            Know When Your Gas Will Finish<br>
+            <span class="headline-gradient">— Before It Does.</span>
+          </h1>
 
-      <p class="landing-hero-subtext">
-        Smart AI-powered prediction based on your cooking habits, household size, food intensity, and extra gas usage. 100% data-driven software with zero hardware required.
-      </p>
+          <p class="landing-hero-subtext">
+            Smart AI-powered prediction based on your cooking habits, household size, food intensity, and extra gas usage. 100% data-driven software with zero hardware required.
+          </p>
 
-      <div class="landing-cta-group">
-        <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
-          <span>🔥 Start Prediction</span>
-          <span style="font-size: 16px;">➔</span>
-        </button>
-        <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
-          <span>📊 Open Live Dashboard</span>
-        </a>
+          <div class="landing-cta-group">
+            <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
+              <span>🔥 Start Prediction</span>
+              <span style="font-size: 16px;">➔</span>
+            </button>
+            <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
+              <span>📊 Open Live Dashboard</span>
+            </a>
+            <button type="button" class="btn-secondary landing-cta-secondary" id="heroLoginBtn" style="border-color: rgba(255, 119, 0, 0.4);">
+              <span>🔐 Sign In</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="landing-hero-mascot">
+          <img src="/static/images/logo.png" alt="SmartLPG Cylinder Mascot" class="mascot-hero-img" title="SmartLPG Assistant">
+        </div>
       </div>
 
       <!-- 4 Value Proposition Pillars -->
@@ -104,9 +122,9 @@
           <span class="prop-icon">🎯</span>
           <span>Realistic Confidence Score</span>
         </div>
-        <div class="value-prop-pill">
-          <span class="prop-icon">🔒</span>
-          <span>100% Private (No Login)</span>
+        <div class="value-prop-pill" id="landingLoginPill" style="cursor: pointer;" title="Click to Sign In">
+          <span class="prop-icon">🔐</span>
+          <span>Secure User Login</span>
         </div>
         <div class="value-prop-pill">
           <span class="prop-icon">📄</span>
@@ -1187,6 +1205,91 @@
       <div class="modal-footer">
         <button type="button" class="btn-secondary close-modal-btn">Close</button>
         <button type="button" class="btn-primary" onclick="window.print()">Print Audit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: USER AUTHENTICATION & LOGIN -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal-dialog auth-modal-dialog">
+      <div class="modal-header auth-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="/static/images/logo.png" alt="SmartLPG Mascot" style="width: 36px; height: 36px; object-fit: contain;">
+          <div>
+            <div class="modal-title" id="authModalTitle">Sign In to SmartLPG</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">Access your cylinder telemetry &amp; prediction history</div>
+          </div>
+        </div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+
+      <!-- Auth Tab Selector -->
+      <div class="auth-tabs-row" id="authTabsGroup">
+        <button type="button" class="auth-tab-btn active" id="authTabLoginBtn">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="authTabRegisterBtn">Create Account</button>
+      </div>
+
+      <!-- Login Form Pane -->
+      <form id="authLoginForm">
+        <div class="modal-body" style="padding-top: 14px;">
+          <div class="form-field">
+            <label>Consumer Number or Registered Email</label>
+            <input type="text" class="form-input" id="loginIdentifier" placeholder="e.g. IND-7492810 or email" value="IND-7492810" required>
+          </div>
+          <div class="form-field">
+            <label>Account Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" value="smartlpg123" required>
+          </div>
+
+          <!-- Demo Quick Credentials Box -->
+          <div style="background: rgba(255, 119, 0, 0.08); border: 1px dashed rgba(255, 119, 0, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 14px; font-size: 11.5px; color: var(--text-secondary);">
+            <div style="font-weight: 700; color: #ff7700; margin-bottom: 4px;">⚡ Demo Quick-Fill Credentials:</div>
+            <div>Consumer: <code>IND-7492810</code> | Pass: <code>smartlpg123</code></div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Sign In to Dashboard ➔</button>
+        </div>
+      </form>
+
+      <!-- Registration Form Pane -->
+      <form id="authRegisterForm" style="display: none;">
+        <div class="modal-body" style="padding-top: 14px;">
+          <div class="form-field">
+            <label>Full Consumer Name</label>
+            <input type="text" class="form-input" id="regFullName" placeholder="e.g. Mohammed Huzaifa Khan" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-field">
+              <label>Email Address</label>
+              <input type="email" class="form-input" id="regEmail" placeholder="name@email.com" required>
+            </div>
+            <div class="form-field">
+              <label>Mobile Number</label>
+              <input type="tel" class="form-input" id="regPhone" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Authorized LPG Provider</label>
+            <select class="form-select" id="regProvider">
+              <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
+              <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
+              <option value="HP Gas (HPCL)">HP Gas (HPCL)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Password</label>
+            <input type="password" class="form-input" id="regPassword" placeholder="Choose a secure password" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Create Account &amp; Access System ➔</button>
+        </div>
+      </form>
+
+      <!-- Logged In User State Box -->
+      <div id="authLoggedInState" style="display: none; padding: 20px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 8px;">👤</div>
+        <h3 id="loggedInUserName" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">User Name</h3>
+        <p id="loggedInUserConsumer" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Consumer ID: IND-7492810</p>
+        <button type="button" class="btn-secondary" id="authLogoutBtn" style="width: 100%; padding: 10px; color: #f43f5e; border-color: rgba(244, 63, 94, 0.3);">Sign Out</button>
       </div>
     </div>
   </div>

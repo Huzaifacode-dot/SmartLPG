@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupWhatIfSimulator();
   initWizardInteractions();
   goToWizardStep(1);
+  initAuthHandlers();
+  checkAuthStatus();
   
   // Refresh cylinder telemetry every 15 seconds
   setInterval(refreshTelemetry, 15000);
@@ -1419,7 +1421,11 @@ async function saveWizardDetails() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.status === 'failed') {
+      showToast(`❌ ${data.error || 'Server error saving details'}`);
+      return;
+    }
     closeModal('familyModal');
     showToast('🎯 Multi-Factor Details Saved! ML model recalibrated.');
     await fetchProfile();
@@ -1433,8 +1439,152 @@ async function saveWizardDetails() {
     }
   } catch (err) {
     console.error('Error saving wizard details:', err);
-    showToast('Failed to save details. Please try again.');
+    showToast('Failed to save details. Please check connection.');
   }
+}
+
+// ==========================================
+// USER AUTHENTICATION & LOGIN MANAGEMENT
+// ==========================================
+let authenticatedUser = null;
+
+async function checkAuthStatus() {
+  try {
+    const res = await fetch('/api/auth/current');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.authenticated && data.user) {
+      authenticatedUser = data.user;
+      updateAuthUI(data.user);
+    }
+  } catch (err) {
+    console.error('Auth check note:', err);
+  }
+}
+
+function updateAuthUI(user) {
+  const userBtnText = document.getElementById('navUserBtnText');
+  const loggedInBox = document.getElementById('authLoggedInState');
+  const loginForm = document.getElementById('authLoginForm');
+  const regForm = document.getElementById('authRegisterForm');
+  const tabsGroup = document.getElementById('authTabsGroup');
+
+  if (user && user.full_name) {
+    const firstName = user.full_name.split(' ')[0];
+    if (userBtnText) userBtnText.textContent = firstName;
+    setTxt('loggedInUserName', user.full_name);
+    setTxt('loggedInUserConsumer', `Consumer ID: ${user.consumer_number} (${user.lpg_provider || 'Indane'})`);
+
+    if (loggedInBox) loggedInBox.style.display = 'block';
+    if (loginForm) loginForm.style.display = 'none';
+    if (regForm) regForm.style.display = 'none';
+    if (tabsGroup) tabsGroup.style.display = 'none';
+    setTxt('authModalTitle', 'Manage Consumer Account');
+  } else {
+    if (userBtnText) userBtnText.textContent = 'Sign In';
+    if (loggedInBox) loggedInBox.style.display = 'none';
+    if (loginForm) loginForm.style.display = 'block';
+    if (tabsGroup) tabsGroup.style.display = 'flex';
+    setTxt('authModalTitle', 'Sign In to SmartLPG');
+  }
+}
+
+function initAuthHandlers() {
+  // Open Login Modal Triggers
+  document.getElementById('openLoginModalBtn')?.addEventListener('click', () => openModal('loginModal'));
+  document.getElementById('heroLoginBtn')?.addEventListener('click', () => openModal('loginModal'));
+  document.getElementById('landingLoginPill')?.addEventListener('click', () => openModal('loginModal'));
+
+  // Switch Tabs in Auth Modal
+  const loginTab = document.getElementById('authTabLoginBtn');
+  const regTab = document.getElementById('authTabRegisterBtn');
+  const loginForm = document.getElementById('authLoginForm');
+  const regForm = document.getElementById('authRegisterForm');
+
+  loginTab?.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    regTab?.classList.remove('active');
+    if (loginForm) loginForm.style.display = 'block';
+    if (regForm) regForm.style.display = 'none';
+    setTxt('authModalTitle', 'Sign In to SmartLPG');
+  });
+
+  regTab?.addEventListener('click', () => {
+    regTab.classList.add('active');
+    loginTab?.classList.remove('active');
+    if (loginForm) loginForm.style.display = 'none';
+    if (regForm) regForm.style.display = 'block';
+    setTxt('authModalTitle', 'Create Consumer Account');
+  });
+
+  // Login Form Submit
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('loginIdentifier')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value.trim();
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password })
+      });
+      const data = await res.json();
+      if (!res.ok || data.status === 'failed') {
+        showToast(`❌ ${data.error || 'Login failed'}`);
+        return;
+      }
+      authenticatedUser = data.user;
+      updateAuthUI(data.user);
+      closeModal('loginModal');
+      showToast(`🎉 ${data.message}`);
+      await fetchProfile();
+      await fetchCylinderStatus();
+    } catch (err) {
+      console.error('Login error:', err);
+      showToast('❌ Login failed. Please check connection.');
+    }
+  });
+
+  // Register Form Submit
+  regForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('regFullName')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
+    const phone = document.getElementById('regPhone')?.value.trim();
+    const provider = document.getElementById('regProvider')?.value;
+    const password = document.getElementById('regPassword')?.value.trim();
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName, email, phone, provider, password })
+      });
+      const data = await res.json();
+      if (!res.ok || data.status === 'failed') {
+        showToast(`❌ ${data.error || 'Registration failed'}`);
+        return;
+      }
+      authenticatedUser = data.user;
+      updateAuthUI(data.user);
+      closeModal('loginModal');
+      showToast(`🎉 Welcome to SmartLPG, ${data.user.full_name}! Account created.`);
+      await fetchProfile();
+      await fetchCylinderStatus();
+    } catch (err) {
+      console.error('Registration error:', err);
+      showToast('❌ Registration failed. Please check connection.');
+    }
+  });
+
+  // Logout Handler
+  document.getElementById('authLogoutBtn')?.addEventListener('click', () => {
+    authenticatedUser = null;
+    updateAuthUI(null);
+    closeModal('loginModal');
+    showToast('👋 Signed out of SmartLPG account.');
+  });
 }
 
 // Fast Forward 25 Days Demo Action
