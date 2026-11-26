@@ -348,6 +348,33 @@ def advance_tracking_step(booking_id):
         (5, "DELIVERED")
     ]
     current_step = row["tracking_step"]
+    
+    # If already delivered (step 5), cycle back to Step 1 for repeatable evaluation demo
+    if current_step >= 5:
+        next_step = 1
+        new_status = "BOOKED"
+        new_otp = str(random.randint(1000, 9999))
+        est_delivery = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
+        cursor.execute('''
+        UPDATE bookings SET tracking_step = 1, status = 'BOOKED', delivery_otp = ?, estimated_delivery_date = ?
+        WHERE booking_id = ?
+        ''', (new_otp, est_delivery, booking_id))
+        
+        # Reset cylinder back to low gas level to show depleted state
+        cursor.execute('''
+        UPDATE cylinder_status 
+        SET current_gas_weight = 2.45, days_remaining = 5.8, is_leak_detected = 0, status = 'Active - Low Gas (17.3%)'
+        WHERE id = (SELECT id FROM cylinder_status ORDER BY id DESC LIMIT 1)
+        ''')
+        
+        cursor.execute('''
+        INSERT INTO alerts (title, message, alert_type, is_read)
+        VALUES ('Demo Tracking Restarted', 'Refill workflow reset to Step 1 (Order Booked). Gas reserve level: 2.45 kg.', 'info', 0)
+        ''')
+        conn.commit()
+        conn.close()
+        return jsonify({"booking_id": booking_id, "step": 1, "status": "BOOKED", "reset": True})
+
     next_step = min(5, current_step + 1)
     new_status = steps[next_step - 1][1]
     
@@ -367,18 +394,74 @@ def advance_tracking_step(booking_id):
             row["provider"], row["amount"], row["payment_mode"]
         ))
         
-        # Reset cylinder to 14.2 kg
-        IoTSimulator.install_new_cylinder(14.2, 15.3)
+        # Replenish active cylinder directly on current connection (avoids SQLite lock contention)
+        burn_rate = 0.42
+        days_rem = round(14.2 / burn_rate, 1)
+        serial = f"CYL-IND-{random.randint(1000, 9999)}X"
+        now_str = datetime.now().strftime("%Y-%m-%d")
+        
+        cursor.execute('''
+        INSERT INTO cylinder_status (
+            cylinder_serial, installed_date, tare_weight, initial_gas_weight,
+            current_gas_weight, burn_rate_kg_per_day, days_remaining,
+            status, is_leak_detected, iot_sync_enabled
+        ) VALUES (?, ?, 15.3, 14.2, 14.2, ?, ?, 'Active - 100% Full', 0, 1)
+        ''', (serial, now_str, burn_rate, days_rem))
         
         cursor.execute('''
         INSERT INTO alerts (title, message, alert_type, is_read)
-        VALUES ('LPG Refill Delivered!', 'Your cylinder has been delivered and mounted. Load cell reset to 100% (14.2 kg).', 'success', 0)
+        VALUES ('LPG Refill Delivered!', 'Your cylinder has been delivered and mounted successfully (14.2 kg available).', 'success', 0)
         ''')
 
     conn.commit()
     conn.close()
     
     return jsonify({"booking_id": booking_id, "step": next_step, "status": new_status})
+
+@app.route("/api/booking/reset-demo", methods=["POST"])
+def reset_tracking_demo():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT booking_id FROM bookings ORDER BY id DESC LIMIT 1")
+    row = cursor.fetchone()
+    
+    new_otp = str(random.randint(1000, 9999))
+    est_delivery = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
+    
+    if row:
+        booking_id = row["booking_id"]
+        cursor.execute('''
+        UPDATE bookings 
+        SET tracking_step = 1, status = 'BOOKED', delivery_otp = ?, estimated_delivery_date = ?
+        WHERE booking_id = ?
+        ''', (new_otp, est_delivery, booking_id))
+    else:
+        booking_id = f"LPG-IND-2026-{random.randint(1000, 9999)}"
+        cursor.execute('''
+        INSERT INTO bookings (
+            booking_id, consumer_number, provider, cylinder_type,
+            booking_date, estimated_delivery_date, delivery_agent_name,
+            delivery_agent_phone, delivery_otp, tracking_step, status,
+            amount, payment_mode
+        ) VALUES (?, 'IND-7492810', 'Indane Gas Services', '14.2 kg Domestic Refill',
+            ?, ?, 'Ramesh Kumar', '+91 94481 29401', ?, 1, 'BOOKED', 858.00, 'UPI (Google Pay / PhonePe)')
+        ''', (booking_id, datetime.now().strftime("%Y-%m-%d"), est_delivery, new_otp))
+        
+    # Set cylinder back to low gas (2.45 kg) to demonstrate depletion warning and alerts
+    cursor.execute('''
+    UPDATE cylinder_status 
+    SET current_gas_weight = 2.45, days_remaining = 5.8, is_leak_detected = 0, status = 'Active - Low Gas (17.3%)'
+    WHERE id = (SELECT id FROM cylinder_status ORDER BY id DESC LIMIT 1)
+    ''')
+    
+    cursor.execute('''
+    INSERT INTO alerts (title, message, alert_type, is_read)
+    VALUES ('Demo Reset', 'Tracking demo reset to Step 1 (Order Booked). Reserve fuel level set to 2.45 kg.', 'info', 0)
+    ''')
+    
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True, "booking_id": booking_id, "step": 1, "status": "BOOKED", "otp": new_otp})
 
 # ----------------- ALERTS & NOTIFICATIONS APIs -----------------
 @app.route("/api/alerts", methods=["GET"])

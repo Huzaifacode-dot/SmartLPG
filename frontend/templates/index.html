@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartLPG - Intelligent LPG Refill Prediction & Booking System</title>
-  <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, load cell IoT telemetry, and authorized one-click booking management.">
+  <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, consumption analytics, and authorized one-click booking management.">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -60,7 +60,7 @@
         <span style="font-size: 32px;">🚨</span>
         <div>
           <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 2px;">EMERGENCY: Rapid Gas Depletion / Leak Detected!</h2>
-          <p style="font-size: 13.5px;">HX711 telemetry detected abnormal gas loss (-0.48 kg / 10m). Turn off cylinder regulator valve immediately, open all kitchen windows, and avoid electrical switches.</p>
+          <p style="font-size: 13.5px;">Safety anomaly detection algorithm identified an abnormal depletion spike (-0.48 kg / 10m). Turn off cylinder regulator valve immediately, open all kitchen windows, and avoid electrical switches.</p>
         </div>
       </div>
       <button class="btn-secondary" style="background: white; color: #b91c1c; font-weight: 700; white-space: nowrap;" onclick="simulateLeakAction()">
@@ -96,7 +96,7 @@
         <div class="card-body">
           <div class="cylinder-visual-wrapper">
             <!-- 3D Styled Cylinder Tank -->
-            <div class="cylinder-3d-model" id="cylinder3DModel" title="Simulated Load Cell Gas Gauge">
+            <div class="cylinder-3d-model" id="cylinder3DModel" title="Real-Time LPG Gas Gauge">
               <div class="cylinder-cap"></div>
               <div class="cylinder-fluid-level" id="cylinderFluid" style="height: 18%;"></div>
             </div>
@@ -108,7 +108,7 @@
               <table class="weight-breakdown-table">
                 <tbody>
                   <tr>
-                    <td>Gross Weight (Load Cell):</td>
+                    <td>Gross Weight (Cylinder + Gas):</td>
                     <td id="grossWeightVal">17.75 kg</td>
                   </tr>
                   <tr>
@@ -129,7 +129,7 @@
           </div>
 
           <div style="font-size: 12px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
-            Hardware: HX711 24-bit ADC + 50kg Strain Gauge Load Cell Node
+            Architecture: 100% Data-Driven Software &amp; ML Analytics Engine
           </div>
         </div>
       </section>
@@ -234,7 +234,7 @@
                 <div class="step-circle">5</div>
                 <div class="step-text">
                   <div class="step-title">Delivered &amp; Installed</div>
-                  <div class="step-subtitle">Cylinder connected &amp; load cell reset</div>
+                  <div class="step-subtitle">Cylinder connected &amp; replenishment verified</div>
                 </div>
               </div>
             </div>
@@ -251,47 +251,19 @@
               </div>
             </div>
 
-            <button class="btn-secondary" id="advanceStatusBtn" style="width: 100%;">
-              ▶ Advance Delivery Status (Demo)
-            </button>
+            <div style="display: flex; gap: 10px; margin-top: 6px;">
+              <button class="btn-secondary" id="advanceStatusBtn" style="flex: 1;">
+                ▶ Advance Delivery Status (Demo)
+              </button>
+              <button class="btn-secondary" id="resetTrackingBtn" style="padding: 10px 14px; font-weight: 600; white-space: nowrap;" title="Reset Tracking Demo back to Step 1">
+                🔄 Reset Demo
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
     </main>
-
-    <!-- HARDWARE / IOT TELEMETRY & SIMULATOR CONTROLS -->
-    <section class="iot-sandbox-bar">
-      <div class="iot-status-summary">
-        <div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
-          <span>📡</span> HX711 Load Cell Hardware Sandbox:
-        </div>
-        <div class="iot-chip">
-          <span style="color: var(--text-muted);">Gross Weight:</span>
-          <strong id="iotGrossWeightVal">17.75 kg</strong>
-        </div>
-        <div class="iot-chip">
-          <span style="color: var(--text-muted);">Net Gas:</span>
-          <strong id="iotNetWeightVal" style="color: #ff7700;">2.45 kg</strong>
-        </div>
-        <div class="iot-chip">
-          <span style="color: var(--text-muted);">Sensor Battery:</span>
-          <strong id="iotBatteryVal" style="color: var(--accent-emerald);">94%</strong>
-        </div>
-      </div>
-
-      <div class="iot-action-btn-group">
-        <button class="btn-secondary" id="btnSimulateCooking" title="Simulates turning on the stove and burning gas">
-          🍳 Simulate 1-Hr Cooking (-0.18 kg)
-        </button>
-        <button class="btn-secondary" id="btnSimulateLeak" style="border-color: rgba(244, 63, 94, 0.4); color: #f43f5e;" title="Triggers sudden anomalous weight drop to test leak detector">
-          ⚠️ Trigger Leak Anomaly
-        </button>
-        <button class="btn-secondary" id="btnResetCylinder" style="border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald);" title="Mounts a brand new full 14.2 kg cylinder">
-          🔄 Mount New Cylinder (14.2 kg)
-        </button>
-      </div>
-    </section>
 
     <!-- SECONDARY SECTION: REFILL CONSUMPTION TREND & WHAT-IF ML SIMULATOR -->
     <section class="secondary-grid">
@@ -879,7 +851,7 @@
           <div class="report-kpi-grid">
             <div class="report-kpi-box">
               <div class="report-kpi-val" id="reportGrossWeight">17.75 kg</div>
-              <div class="report-kpi-lbl">Gross Load Cell Weight</div>
+              <div class="report-kpi-lbl">Gross Package Weight</div>
             </div>
             <div class="report-kpi-box">
               <div class="report-kpi-val" id="reportNetLpg" style="color: #ff7700;">2.45 kg</div>
@@ -924,9 +896,9 @@
             </tbody>
           </table>
 
-          <!-- Hardware & Safety Verification Section -->
+          <!-- Architecture & Safety Verification Section -->
           <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 12px; font-size: 12px; color: var(--text-secondary);">
-            <div>Hardware: HX711 24-bit ADC Strain Gauge • ESP32 Wireless Telemetry Node</div>
+            <div>System: Data-Driven Machine Learning Architecture • Scikit-Learn Model • Cloud Analytics</div>
             <div>Safety Anomaly Detector: <strong style="color: var(--accent-emerald);">NORMAL (No Gas Leaks)</strong></div>
           </div>
         </div>

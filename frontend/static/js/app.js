@@ -314,8 +314,8 @@ function renderTrackingSection(booking) {
   const advanceBtn = document.getElementById('advanceStatusBtn');
   if (advanceBtn) {
     if (currentStep >= 5) {
-      advanceBtn.textContent = '✓ Refill Completed';
-      advanceBtn.disabled = true;
+      advanceBtn.textContent = '✓ Delivered & Installed (Click to Restart)';
+      advanceBtn.disabled = false;
     } else {
       const stepNames = ['Confirm Order', 'Dispatch Cylinder', 'Out for Delivery', 'Deliver & Mount Cylinder'];
       advanceBtn.textContent = `▶ Advance to: ${stepNames[currentStep - 1]}`;
@@ -330,13 +330,34 @@ async function advanceTrackingStatus() {
   try {
     const res = await fetch(`/api/booking/advance-step/${activeBooking.booking_id}`, { method: 'POST' });
     const data = await res.json();
-    showToast(`Order updated to: ${data.status}`);
+    if (data.reset) {
+      showToast('Refill cycle finished! Demo restarted to Step 1.');
+    } else {
+      showToast(`Order updated to: ${data.status}`);
+    }
     await fetchActiveBooking();
     await fetchCylinderStatus();
     await fetchRefillHistory();
     await fetchAlerts();
   } catch (err) {
     console.error('Error advancing tracking:', err);
+  }
+}
+
+// Reset Demo Booking & Telemetry
+async function resetTrackingDemo() {
+  try {
+    const res = await fetch('/api/booking/reset-demo', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Demo reset to Step 1 (Order Booked). Reserve fuel: 2.45 kg');
+      await fetchActiveBooking();
+      await fetchCylinderStatus();
+      await fetchRefillHistory();
+      await fetchAlerts();
+    }
+  } catch (err) {
+    console.error('Error resetting tracking demo:', err);
   }
 }
 
@@ -607,61 +628,91 @@ function setupWhatIfSimulator() {
   
   if (!familySlider || !mealsSlider || !hoursSlider) return;
   
+  let debounceTimer = null;
+
+  // Real-time dynamic calculation function (instant client-side + debounced ML API confirmation)
+  const updateSim = () => {
+    const fam = parseInt(familySlider.value) || 4;
+    const meals = parseInt(mealsSlider.value) || 3;
+    const hrs = parseFloat(hoursSlider.value) || 2.5;
+    const cap = parseFloat(capSelect?.value || '14.2');
+
+    // 1. Instant dynamic numerical label updates (changes as slider moves)
+    setTxt('simFamilyVal', fam);
+    setTxt('simMealsVal', meals);
+    setTxt('simHoursVal', `${hrs.toFixed(1)} hrs`);
+
+    // 2. Instant client-side dynamic preview (0ms latency for smooth 60fps sliding)
+    const flameMult = simFlame === 'High' ? 1.25 : (simFlame === 'Low' ? 0.78 : 1.0);
+    const effMult = simEfficiency ? 0.85 : 1.0;
+    const instantBurn = Math.max(0.12, (0.055 * fam + 0.045 * meals + 0.08 * hrs) * flameMult * effMult);
+    const instantDays = (cap / instantBurn).toFixed(1);
+    const refillPrice = cap === 14.2 ? 858.0 : (cap === 5.0 ? 320.0 : 1650.0);
+    const instantDailyCost = (instantBurn * (refillPrice / cap)).toFixed(2);
+    const instantMonthly = Math.round(instantDailyCost * 30);
+
+    setTxt('simResultBurnRate', `${instantBurn.toFixed(2)} kg/d`);
+    setTxt('simResultLongevity', `~${instantDays} Days`);
+    setTxt('simResultDailyCost', `₹${instantDailyCost}/d`);
+    setTxt('simResultMonthly', `₹${instantMonthly} / Mo`);
+
+    // 3. Debounced query to server ML model to confirm exact model predictions & confidence
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/predict/what-if', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            family_size: fam,
+            meals_per_day: meals,
+            cooking_hours: hrs,
+            cylinder_capacity: cap,
+            flame_intensity: simFlame,
+            efficiency_mode: simEfficiency,
+            refill_price: refillPrice
+          })
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setTxt('simResultBurnRate', `${data.predicted_burn_rate_kg} kg/d`);
+        setTxt('simResultLongevity', `~${data.estimated_cylinder_life_days} Days`);
+        setTxt('simResultDailyCost', `₹${data.daily_cost_inr}/d`);
+        setTxt('simResultMonthly', `₹${data.monthly_cost_inr} / Mo`);
+        setTxt('simConfidenceBadge', `🎯 ${data.confidence_score || 97}% Confidence`);
+      } catch (err) {
+        console.error('Error querying what-if ML model:', err);
+      }
+    }, 150);
+  };
+
   // Flame pill buttons
   document.querySelectorAll('#simFlameGroup .flame-pill-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       document.querySelectorAll('#simFlameGroup .flame-pill-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       simFlame = btn.getAttribute('data-flame') || 'Medium';
       updateSim();
     });
   });
-  
+
   // Efficiency mode toggle
   effToggle?.addEventListener('change', (e) => {
     simEfficiency = e.target.checked;
     updateSim();
   });
-  
+
+  // Cylinder capacity dropdown
   capSelect?.addEventListener('change', updateSim);
-  
-  const updateSim = async () => {
-    setTxt('simFamilyVal', familySlider.value);
-    setTxt('simMealsVal', mealsSlider.value);
-    setTxt('simHoursVal', `${hoursSlider.value} hrs`);
-    
-    const cap = parseFloat(capSelect?.value || '14.2');
-    
-    try {
-      const res = await fetch('/api/predict/what-if', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          family_size: familySlider.value,
-          meals_per_day: mealsSlider.value,
-          cooking_hours: hoursSlider.value,
-          cylinder_capacity: cap,
-          flame_intensity: simFlame,
-          efficiency_mode: simEfficiency,
-          refill_price: cap === 14.2 ? 858.0 : (cap === 5.0 ? 320.0 : 1650.0)
-        })
-      });
-      const data = await res.json();
-      setTxt('simResultBurnRate', `${data.predicted_burn_rate_kg} kg/d`);
-      setTxt('simResultLongevity', `~${data.estimated_cylinder_life_days} Days`);
-      setTxt('simResultDailyCost', `₹${data.daily_cost_inr}/d`);
-      setTxt('simResultMonthly', `₹${data.monthly_cost_inr} / Mo`);
-      setTxt('simConfidenceBadge', `🎯 ${data.confidence_score || 97}% Confidence`);
-    } catch (err) {
-      console.error('Error running what-if:', err);
-    }
-  };
-  
-  familySlider.addEventListener('input', updateSim);
-  mealsSlider.addEventListener('input', updateSim);
-  hoursSlider.addEventListener('input', updateSim);
-  
-  // Trigger initial
+
+  // Bind both 'input' and 'change' events to sliders for instant reactivity
+  ['input', 'change'].forEach(evt => {
+    familySlider.addEventListener(evt, updateSim);
+    mealsSlider.addEventListener(evt, updateSim);
+    hoursSlider.addEventListener(evt, updateSim);
+  });
+
+  // Trigger initial calculation
   updateSim();
 }
 
@@ -765,7 +816,7 @@ async function simulateLeakAction() {
 }
 
 async function resetCylinderAction() {
-  if (!confirm('Mount a brand new 14.2 kg LPG cylinder onto the load cell scale?')) return;
+  if (!confirm('Mount and install a brand new 14.2 kg LPG cylinder?')) return;
   try {
     const res = await fetch('/api/iot/reset-cylinder', { method: 'POST' });
     const data = await res.json();
@@ -994,13 +1045,9 @@ function setupEventListeners() {
     }
   });
   
-  // Stepper advance demo button
+  // Stepper advance and demo reset buttons
   document.getElementById('advanceStatusBtn')?.addEventListener('click', advanceTrackingStatus);
-  
-  // IoT Sandbox Buttons
-  document.getElementById('btnSimulateCooking')?.addEventListener('click', simulateCookingAction);
-  document.getElementById('btnSimulateLeak')?.addEventListener('click', simulateLeakAction);
-  document.getElementById('btnResetCylinder')?.addEventListener('click', resetCylinderAction);
+  document.getElementById('resetTrackingBtn')?.addEventListener('click', resetTrackingDemo);
 }
 
 function openModal(id) {

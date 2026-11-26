@@ -135,12 +135,18 @@ body {
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  background: linear-gradient(120deg, #ffffff 40%, var(--flame-start) 100%);
+  background: linear-gradient(120deg, var(--text-primary) 40%, var(--flame-start) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+[data-theme="light"] .brand-title {
+  background: linear-gradient(120deg, #0f172a 40%, #ff5500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .project-tag {

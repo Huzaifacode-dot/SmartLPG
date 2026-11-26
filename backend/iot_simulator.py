@@ -116,7 +116,7 @@ class IoTSimulator:
             INSERT INTO alerts (title, message, alert_type, is_read)
             VALUES (
                 'EMERGENCY: Gas Leak Detected!',
-                'HX711 telemetry detected abnormal gas pressure/weight drop (-0.48 kg in 10 mins). Turn off cylinder regulator immediately and ventilate area!',
+                'Safety anomaly detector algorithm identified abnormal gas depletion (-0.48 kg in 10 mins). Turn off cylinder regulator immediately and ventilate kitchen area!',
                 'critical', 0
             )
             ''')
@@ -149,12 +149,12 @@ class IoTSimulator:
         gross = round(tare_weight + cylinder_capacity, 2)
         cursor.execute('''
         INSERT INTO iot_telemetry (sensor_id, gross_weight, tare_weight, net_lpg_weight, battery_level, leak_detected)
-        VALUES ('HX711-ESP32-NODE-1', ?, ?, ?, 99, 0)
+        VALUES ('DATA-STREAM-NODE-1', ?, ?, ?, 99, 0)
         ''', (gross, tare_weight, cylinder_capacity))
         
         cursor.execute('''
         INSERT INTO alerts (title, message, alert_type, is_read)
-        VALUES ('New Cylinder Mounted', 'New cylinder {0} installed. Load cell calibrated. 100% capacity ({1} kg).', 'success', 0)
+        VALUES ('New Cylinder Mounted', 'New cylinder {0} installed and verified. 100% capacity ({1} kg).', 'success', 0)
         '''.format(serial, cylinder_capacity))
         
         conn.commit()

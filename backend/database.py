@@ -259,15 +259,15 @@ def seed_initial_data(conn):
         VALUES 
         ('Refill Recommended', 'Current LPG reserve is at 2.45 kg (approx. 5.8 days). Factoring in 3-day delivery lead time, booking now avoids outages.', 'warning', 0),
         ('Refill Order Dispatched', 'Booking LPG-IND-2026-9402 has been dispatched from Shanthi Indane Agency. Delivery Agent: Ramesh Kumar (+91 94481 29401). OTP: 4912.', 'info', 0),
-        ('IoT Load Cell Active', 'HX711 smart scale connected. Current gross weight: 17.75 kg (Tare: 15.30 kg, Net Gas: 2.45 kg). No gas leaks detected.', 'success', 0)
+        ('Real-Time Data Stream Active', 'Data analytics pipeline connected. Current gross weight: 17.75 kg (Tare: 15.30 kg, Net Gas: 2.45 kg). No gas leaks detected.', 'success', 0)
         ''')
 
-    # Seed recent IoT telemetry
+    # Seed recent telemetry
     cursor.execute("SELECT COUNT(*) FROM iot_telemetry")
     if cursor.fetchone()[0] == 0:
         cursor.execute('''
         INSERT INTO iot_telemetry (sensor_id, gross_weight, tare_weight, net_lpg_weight, battery_level, leak_detected)
-        VALUES ('HX711-ESP32-NODE-1', 17.75, 15.30, 2.45, 94, 0)
+        VALUES ('DATA-STREAM-NODE-1', 17.75, 15.30, 2.45, 94, 0)
         ''')
 
     conn.commit()
