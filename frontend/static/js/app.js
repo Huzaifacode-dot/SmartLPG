@@ -506,7 +506,7 @@ function drawConsumptionChart(history) {
   const graphH = h - padding.top - padding.bottom;
   
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  const gridColor = isLight ? 'rgba(15, 23, 42, 0.07)' : 'rgba(255, 255, 255, 0.06)';
+  const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.06)';
   const axisLabelColor = isLight ? '#64748B' : '#94A3B8';
   const valueLabelColor = isLight ? '#0F172A' : '#F8FAFC';
   const pointBorderColor = isLight ? '#FFFFFF' : '#11131A';
@@ -536,7 +536,7 @@ function drawConsumptionChart(history) {
   
   // Area gradient
   const grad = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.22)' : 'rgba(20, 184, 166, 0.26)');
+  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.24)' : 'rgba(20, 184, 166, 0.26)');
   grad.addColorStop(1, isLight ? 'rgba(13, 148, 136, 0.0)' : 'rgba(20, 184, 166, 0.0)');
   
   ctx.beginPath();
@@ -612,7 +612,7 @@ function drawDepletionCountdownChart(cyl) {
   const leadTime = cyl.lead_time_days || 3;
   
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  const gridColor = isLight ? 'rgba(15, 23, 42, 0.07)' : 'rgba(255, 255, 255, 0.06)';
+  const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.06)';
   const axisLabelColor = isLight ? '#64748B' : '#94A3B8';
   const valueLabelColor = isLight ? '#0F172A' : '#F8FAFC';
   const pointBorderColor = isLight ? '#FFFFFF' : '#11131A';
@@ -657,7 +657,7 @@ function drawDepletionCountdownChart(cyl) {
   
   // Gradient fill
   const grad = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.22)' : 'rgba(20, 184, 166, 0.25)');
+  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.24)' : 'rgba(20, 184, 166, 0.25)');
   grad.addColorStop(1, isLight ? 'rgba(13, 148, 136, 0.0)' : 'rgba(20, 184, 166, 0.0)');
   
   ctx.beginPath();

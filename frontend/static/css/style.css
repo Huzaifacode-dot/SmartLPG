@@ -195,9 +195,10 @@ body {
 
 .nav-divider {
   width: 1px;
-  height: 20px;
-  background: var(--border-subtle);
-  margin: 0 4px;
+  height: 22px;
+  background: var(--border-strong);
+  margin: 0 6px;
+  flex-shrink: 0;
 }
 
 .status-pill {
@@ -279,12 +280,13 @@ body {
 
 .badge-count {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -4px;
+  right: -4px;
   background: var(--status-critical);
   color: #FFFFFF;
   font-size: 10px;
   font-weight: 700;
+  line-height: 1;
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
@@ -293,6 +295,8 @@ body {
   align-items: center;
   justify-content: center;
   border: 2px solid var(--bg-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
 }
 
 /* Segmented Dark / Light Theme Pill Toggle */
@@ -416,7 +420,9 @@ body {
 .header-meta-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
 .model-meta-tag {
@@ -425,8 +431,10 @@ body {
   color: var(--text-muted);
   background: var(--bg-card-elevated);
   border: 1px solid var(--border-nested);
-  padding: 3px 8px;
+  padding: 3px 7px;
   border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .confidence-pill {
@@ -435,12 +443,13 @@ body {
   color: var(--status-success);
   background: var(--status-success-tint);
   border: 1px solid var(--status-success-border);
-  padding: 3px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* =======================================================
@@ -903,8 +912,8 @@ body {
   background: var(--bg-card-elevated);
   border: 1px solid var(--border-nested);
   border-radius: var(--radius-md);
-  padding: 20px 16px;
-  margin-bottom: 16px;
+  padding: 28px 18px;
+  margin-bottom: 18px;
   text-align: center;
 }
 
@@ -944,15 +953,20 @@ body {
 .prediction-specs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex: 1;
+  align-content: stretch;
 }
 
 .spec-tile {
   background: var(--bg-card-elevated);
   border: 1px solid var(--border-nested);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .spec-title {
