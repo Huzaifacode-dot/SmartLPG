@@ -38,7 +38,7 @@ function initTheme() {
   document.documentElement.setAttribute('data-theme', savedTheme);
   const themeBtn = document.getElementById('themeToggleBtn');
   if (themeBtn) {
-    themeBtn.innerHTML = savedTheme === 'dark' ? '☀️' : '🌙';
+    themeBtn.setAttribute('aria-label', savedTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
   }
 }
 
@@ -49,7 +49,7 @@ function toggleTheme() {
   localStorage.setItem('smartlpg_theme', newTheme);
   const themeBtn = document.getElementById('themeToggleBtn');
   if (themeBtn) {
-    themeBtn.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
+    themeBtn.setAttribute('aria-label', newTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
   }
   // Redraw chart to reflect theme colors
   renderCurrentChart();
@@ -452,13 +452,13 @@ function renderRefillHistoryTable(rows) {
   rows.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><strong>${r.booking_id}</strong></td>
-      <td>${r.booking_date}</td>
-      <td>${r.delivery_date}</td>
+      <td class="tabular-nums"><strong>${r.booking_id}</strong></td>
+      <td class="tabular-nums">${r.booking_date}</td>
+      <td class="tabular-nums">${r.delivery_date}</td>
       <td>${r.provider}</td>
-      <td>₹${r.amount_paid.toFixed(2)}</td>
-      <td><strong>${r.days_lasted} Days</strong></td>
-      <td>${r.avg_daily_consumption.toFixed(3)} kg/d</td>
+      <td class="num-col tabular-nums">₹${r.amount_paid.toFixed(2)}</td>
+      <td class="num-col tabular-nums"><strong>${r.days_lasted} Days</strong></td>
+      <td class="num-col tabular-nums">${r.avg_daily_consumption.toFixed(3)} kg/d</td>
       <td><span class="badge-status delivered">${r.status}</span></td>
     `;
     tbody.appendChild(tr);
@@ -505,8 +505,15 @@ function drawConsumptionChart(history) {
   const graphW = w - padding.left - padding.right;
   const graphH = h - padding.top - padding.bottom;
   
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridColor = isLight ? 'rgba(15, 23, 42, 0.07)' : 'rgba(255, 255, 255, 0.06)';
+  const axisLabelColor = isLight ? '#64748B' : '#94A3B8';
+  const valueLabelColor = isLight ? '#0F172A' : '#F8FAFC';
+  const pointBorderColor = isLight ? '#FFFFFF' : '#11131A';
+  const lineAccent = isLight ? '#0D9488' : '#14B8A6';
+
   // Grid lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
   const numGridLines = 4;
   for (let i = 0; i <= numGridLines; i++) {
@@ -516,7 +523,7 @@ function drawConsumptionChart(history) {
     ctx.lineTo(w - padding.right, y);
     ctx.stroke();
     
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = axisLabelColor;
     ctx.font = '10.5px Plus Jakarta Sans';
     ctx.textAlign = 'right';
     const val = Math.round(40 - (40 / numGridLines) * i);
@@ -529,8 +536,8 @@ function drawConsumptionChart(history) {
   
   // Area gradient
   const grad = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-  grad.addColorStop(0, 'rgba(255, 119, 0, 0.35)');
-  grad.addColorStop(1, 'rgba(255, 119, 0, 0.0)');
+  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.22)' : 'rgba(20, 184, 166, 0.26)');
+  grad.addColorStop(1, isLight ? 'rgba(13, 148, 136, 0.0)' : 'rgba(20, 184, 166, 0.0)');
   
   ctx.beginPath();
   sorted.forEach((pt, i) => {
@@ -543,8 +550,8 @@ function drawConsumptionChart(history) {
     }
   });
   
-  ctx.strokeStyle = '#ff7700';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = lineAccent;
+  ctx.lineWidth = 2.5;
   ctx.stroke();
   
   ctx.lineTo(padding.left + (sorted.length - 1) * stepX, h - padding.bottom);
@@ -559,21 +566,21 @@ function drawConsumptionChart(history) {
     const y = padding.top + graphH * (1 - pt.days_lasted / maxDays);
     
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff7700';
+    ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = lineAccent;
     ctx.fill();
     ctx.lineWidth = 2;
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = pointBorderColor;
     ctx.stroke();
     
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = axisLabelColor;
     ctx.font = '11px Plus Jakarta Sans';
     ctx.textAlign = 'center';
     const dateLabel = pt.booking_date.substring(5);
     ctx.fillText(dateLabel, x, h - padding.bottom + 20);
     
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 11px Outfit';
+    ctx.fillStyle = valueLabelColor;
+    ctx.font = '600 11px Outfit';
     ctx.fillText(`${pt.days_lasted}d`, x, y - 10);
   });
 }
@@ -604,8 +611,15 @@ function drawDepletionCountdownChart(cyl) {
   const burnRate = cyl.daily_burn_rate_kg || 0.42;
   const leadTime = cyl.lead_time_days || 3;
   
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridColor = isLight ? 'rgba(15, 23, 42, 0.07)' : 'rgba(255, 255, 255, 0.06)';
+  const axisLabelColor = isLight ? '#64748B' : '#94A3B8';
+  const valueLabelColor = isLight ? '#0F172A' : '#F8FAFC';
+  const pointBorderColor = isLight ? '#FFFFFF' : '#11131A';
+  const curveColor = isLight ? '#0D9488' : '#14B8A6';
+
   // Grid
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
     const y = padding.top + (graphH / 4) * i;
@@ -615,7 +629,7 @@ function drawDepletionCountdownChart(cyl) {
     ctx.stroke();
     
     const kgVal = (maxGas * (1 - i / 4)).toFixed(1);
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = axisLabelColor;
     ctx.font = '10.5px Plus Jakarta Sans';
     ctx.textAlign = 'right';
     ctx.fillText(`${kgVal}kg`, padding.left - 8, y + 4);
@@ -623,12 +637,12 @@ function drawDepletionCountdownChart(cyl) {
   
   // Safe buffer threshold area (Days <= leadTime)
   const bufferStartX = padding.left + graphW * Math.max(0, (totalDays - leadTime) / totalDays);
-  ctx.fillStyle = 'rgba(244, 63, 94, 0.12)';
+  ctx.fillStyle = 'rgba(239, 68, 68, 0.09)';
   ctx.fillRect(bufferStartX, padding.top, w - padding.right - bufferStartX, graphH);
   
   // Buffer Label
-  ctx.fillStyle = '#f43f5e';
-  ctx.font = 'bold 10px Plus Jakarta Sans';
+  ctx.fillStyle = '#EF4444';
+  ctx.font = '700 10px Plus Jakarta Sans';
   ctx.textAlign = 'center';
   ctx.fillText('CRITICAL LEAD BUFFER', (bufferStartX + w - padding.right) / 2, padding.top + 14);
   
@@ -643,16 +657,16 @@ function drawDepletionCountdownChart(cyl) {
   
   // Gradient fill
   const grad = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-  grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
-  grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+  grad.addColorStop(0, isLight ? 'rgba(13, 148, 136, 0.22)' : 'rgba(20, 184, 166, 0.25)');
+  grad.addColorStop(1, isLight ? 'rgba(13, 148, 136, 0.0)' : 'rgba(20, 184, 166, 0.0)');
   
   ctx.beginPath();
   points.forEach((pt, i) => {
     if (i === 0) ctx.moveTo(pt.x, pt.y);
     else ctx.lineTo(pt.x, pt.y);
   });
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = curveColor;
+  ctx.lineWidth = 2.5;
   ctx.stroke();
   
   ctx.lineTo(points[points.length - 1].x, h - padding.bottom);
@@ -664,23 +678,23 @@ function drawDepletionCountdownChart(cyl) {
   // Plotted points
   points.forEach((pt, i) => {
     ctx.beginPath();
-    ctx.arc(pt.x, pt.y, i === 0 ? 6 : 4, 0, Math.PI * 2);
-    ctx.fillStyle = i === 0 ? '#10b981' : (pt.gas <= 0.2 ? '#f43f5e' : '#38bdf8');
+    ctx.arc(pt.x, pt.y, i === 0 ? 5.5 : 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = i === 0 ? '#10B981' : (pt.gas <= 0.2 ? '#EF4444' : curveColor);
     ctx.fill();
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = pointBorderColor;
     ctx.stroke();
     
     // Label day
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = axisLabelColor;
     ctx.font = '10px Plus Jakarta Sans';
     ctx.textAlign = 'center';
     ctx.fillText(`+${pt.day}d`, pt.x, h - padding.bottom + 18);
     
     // Weight value on key points
     if (i === 0 || i === points.length - 1 || pt.day === totalDays - leadTime) {
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = 'bold 10px Outfit';
+      ctx.fillStyle = valueLabelColor;
+      ctx.font = '600 10px Outfit';
       ctx.fillText(`${pt.gas.toFixed(1)}kg`, pt.x, pt.y - 10);
     }
   });
@@ -925,12 +939,12 @@ function populateAndOpenAuditReport() {
     refillHistoryData.slice(0, 5).forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong>${r.booking_id}</strong></td>
-        <td>${r.booking_date}</td>
-        <td>${r.delivery_date}</td>
-        <td>₹${r.amount_paid.toFixed(2)}</td>
-        <td>${r.days_lasted} Days</td>
-        <td>${r.avg_daily_consumption.toFixed(3)} kg/d</td>
+        <td class="tabular-nums"><strong>${r.booking_id}</strong></td>
+        <td class="tabular-nums">${r.booking_date}</td>
+        <td class="tabular-nums">${r.delivery_date}</td>
+        <td class="num-col tabular-nums">₹${r.amount_paid.toFixed(2)}</td>
+        <td class="num-col tabular-nums">${r.days_lasted} Days</td>
+        <td class="num-col tabular-nums">${r.avg_daily_consumption.toFixed(3)} kg/d</td>
       `;
       tbody.appendChild(tr);
     });
