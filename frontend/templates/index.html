@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartLPG - Intelligent LPG Refill Prediction &amp; Booking System</title>
   <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, consumption analytics, and authorized one-click booking management.">
+  <link rel="icon" type="image/png" href="/static/images/logo.png">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -16,11 +17,7 @@
   <header class="top-header">
     <div class="top-header-inner">
       <div class="brand-section">
-        <div class="logo-flame" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-          </svg>
-        </div>
+        <img src="/static/images/logo.png" alt="SmartLPG Cylinder Mascot" class="brand-mascot-logo" id="navBrandLogo">
         <div class="brand-title-group">
           <h1 class="brand-title">SmartLPG</h1>
           <span class="project-tag">AI</span>
@@ -67,6 +64,11 @@
           </span>
         </button>
 
+        <button type="button" class="nav-auth-btn" id="openLoginModalBtn" title="User Login &amp; Account Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span id="navUserBtnText">Sign In</span>
+        </button>
+
         <button type="button" class="action-btn-circle" id="openProfileModalBtn" title="Registered User &amp; Gas Provider Details" aria-label="Profile">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
@@ -90,17 +92,24 @@
           <p class="landing-hero-subtext">
             Sensor-free ML forecasting based on household size, cooking habits, and burn intensity. Zero hardware required.
           </p>
+          <div class="landing-cta-group" style="margin-top: 16px;">
+            <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <span>Start Prediction</span>
+            </button>
+            <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+              <span>Open Live Dashboard</span>
+            </a>
+            <button type="button" class="btn-secondary landing-cta-secondary" id="heroLoginBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              <span>Sign In</span>
+            </button>
+          </div>
         </div>
 
-        <div class="landing-cta-group">
-          <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-            <span>Start Prediction</span>
-          </button>
-          <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-            <span>Open Live Dashboard</span>
-          </a>
+        <div class="landing-hero-mascot">
+          <img src="/static/images/logo.png" alt="SmartLPG Cylinder Mascot" class="mascot-hero-img" title="SmartLPG Assistant">
         </div>
       </div>
 
@@ -116,9 +125,9 @@
           <span>Realistic Confidence Score</span>
         </div>
         <span class="prop-sep" aria-hidden="true"></span>
-        <div class="value-prop-item">
+        <div class="value-prop-item value-prop-clickable" id="landingLoginPill" title="Click to Sign In">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span>100% Private (No Login)</span>
+          <span>Secure User Login</span>
         </div>
         <span class="prop-sep" aria-hidden="true"></span>
         <div class="value-prop-item">
@@ -1209,6 +1218,93 @@
       <div class="modal-footer">
         <button type="button" class="btn-secondary close-modal-btn">Close</button>
         <button type="button" class="btn-primary modal-submit-btn" onclick="window.print()">Print Audit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: USER AUTHENTICATION & LOGIN -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal-dialog auth-modal-dialog">
+      <div class="modal-header auth-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="/static/images/logo.png" alt="SmartLPG Mascot" style="width: 36px; height: 36px; object-fit: contain;">
+          <div>
+            <div class="modal-title" id="authModalTitle">Sign In to SmartLPG</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">Access your cylinder telemetry &amp; prediction history</div>
+          </div>
+        </div>
+        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+      </div>
+
+      <!-- Auth Tab Selector -->
+      <div class="auth-tabs-row" id="authTabsGroup">
+        <button type="button" class="auth-tab-btn active" id="authTabLoginBtn">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="authTabRegisterBtn">Create Account</button>
+      </div>
+
+      <!-- Login Form Pane -->
+      <form id="authLoginForm">
+        <div class="modal-body" style="padding-top: 14px;">
+          <div class="form-field">
+            <label>Consumer Number or Registered Email</label>
+            <input type="text" class="form-input" id="loginIdentifier" placeholder="e.g. IND-7492810 or email" value="IND-7492810" required>
+          </div>
+          <div class="form-field">
+            <label>Account Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" value="smartlpg123" required>
+          </div>
+
+          <!-- Demo Quick Credentials Box -->
+          <div class="auth-demo-box">
+            <div class="auth-demo-title">Demo Quick-Fill Credentials</div>
+            <div>Consumer: <code>IND-7492810</code> | Pass: <code>smartlpg123</code></div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Sign In to Dashboard</button>
+        </div>
+      </form>
+
+      <!-- Registration Form Pane -->
+      <form id="authRegisterForm" style="display: none;">
+        <div class="modal-body" style="padding-top: 14px;">
+          <div class="form-field">
+            <label>Full Consumer Name</label>
+            <input type="text" class="form-input" id="regFullName" placeholder="e.g. Mohammed Huzaifa Khan" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-field">
+              <label>Email Address</label>
+              <input type="email" class="form-input" id="regEmail" placeholder="name@email.com" required>
+            </div>
+            <div class="form-field">
+              <label>Mobile Number</label>
+              <input type="tel" class="form-input" id="regPhone" placeholder="+91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Authorized LPG Provider</label>
+            <select class="form-select" id="regProvider">
+              <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
+              <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
+              <option value="HP Gas (HPCL)">HP Gas (HPCL)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Password</label>
+            <input type="password" class="form-input" id="regPassword" placeholder="Choose a secure password" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Create Account &amp; Access System ➔</button>
+        </div>
+      </form>
+
+      <!-- Logged In User State Box -->
+      <div id="authLoggedInState" style="display: none; padding: 24px 20px; text-align: center;">
+        <div class="auth-logged-avatar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 id="loggedInUserName" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">User Name</h3>
+        <p id="loggedInUserConsumer" class="tabular-nums" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Consumer ID: IND-7492810</p>
+        <button type="button" class="btn-secondary auth-logout-btn" id="authLogoutBtn">Sign Out</button>
       </div>
     </div>
   </div>

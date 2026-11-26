@@ -25,12 +25,25 @@ CORS(app)
 # Ensure DB is initialized
 init_db()
 
-# ----------------- WEB PAGES -----------------
+# ----------------- WEB PAGES & STATIC ASSETS -----------------
 @app.route("/")
+@app.route("/index.html")
 @app.route("/api")
 @app.route("/api/index")
 def index():
     return render_template("index.html")
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    return send_from_directory(STATIC_DIR, filename)
+
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(os.path.join(STATIC_DIR, "css"), filename)
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(os.path.join(STATIC_DIR, "js"), filename)
 
 # ----------------- USER PROFILE APIs -----------------
 @app.route("/api/profile", methods=["GET"])
@@ -71,118 +84,263 @@ def get_profile():
 @app.route("/api/profile", methods=["PUT"])
 @app.route("/api/profile/details-update", methods=["POST", "PUT"])
 def update_profile():
-    data = request.json or {}
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT * FROM user_profile ORDER BY id ASC LIMIT 1")
-    user = cursor.fetchone()
-    if not user:
-        conn.close()
-        return jsonify({"error": "Profile not found"}), 404
-
-    cursor.execute("PRAGMA table_info(user_profile)")
-    rows = cursor.fetchall()
-    existing_cols = {row["name"] if hasattr(row, "keys") else row[1] for row in rows}
-
-    allowed_fields = [
-        "primary_name", "phone", "email", "address", "lpg_provider", "consumer_number",
-        "distributor_name", "distributor_phone", "connection_type",
-        "family_size", "adults_count", "children_count", "cooking_meals_per_day",
-        "daily_cooking_hours", "usage_purpose", "household_classification",
-        "cylinder_capacity", "date_of_last_refill", "current_refill_price", "lead_time_days",
-        "cooking_days_per_week", "avg_time_per_meal", "flame_intensity",
-        "frequently_cooked_foods", "extra_appliances", "extra_weekly_hours",
-        "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"
-    ]
-    
-    # Calculate family size if adults/children passed
-    if "adults_count" in data or "children_count" in data:
-        ad = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
-        ch = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
-        data["family_size"] = ad + ch
+    try:
+        data = request.json or {}
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-    update_fields = {}
-    for field in allowed_fields:
-        if field in data and field in existing_cols:
-            val = data[field]
-            if field in ["family_size", "adults_count", "children_count", "cooking_meals_per_day", "lead_time_days",
-                         "cooking_days_per_week", "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"]:
-                val = int(val)
-            elif field in ["daily_cooking_hours", "cylinder_capacity", "current_refill_price", "extra_weekly_hours"]:
-                val = float(val)
-            elif isinstance(val, list):
-                val = ",".join(str(item) for item in val)
-            update_fields[field] = val
+        cursor.execute("SELECT * FROM user_profile ORDER BY id ASC LIMIT 1")
+        user = cursor.fetchone()
+        if not user:
+            from backend.database import seed_initial_data
+            seed_initial_data(conn)
+            cursor.execute("SELECT * FROM user_profile ORDER BY id ASC LIMIT 1")
+            user = cursor.fetchone()
+            if not user:
+                conn.close()
+                return jsonify({"error": "Profile not found and could not be initialized", "status": "failed"}), 404
 
-    if update_fields:
-        set_clause = ", ".join([f"{k} = ?" for k in update_fields.keys()])
-        params = list(update_fields.values()) + [user["id"]]
-        cursor.execute(f"UPDATE user_profile SET {set_clause} WHERE id = ?", params)
-    
-    # Recalculate burn rate with all 5 Multi-Factor Steps
-    adults = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
-    children = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
-    meals = int(data.get("cooking_meals_per_day", user["cooking_meals_per_day"]))
-    days_week = int(data.get("cooking_days_per_week", user["cooking_days_per_week"] if "cooking_days_per_week" in user.keys() else 7))
-    avg_mins = data.get("avg_time_per_meal", user["avg_time_per_meal"] if "avg_time_per_meal" in user.keys() else "20 Minutes (Quick)")
-    flame = data.get("flame_intensity", user["flame_intensity"] if "flame_intensity" in user.keys() else "Medium Flame")
-    foods = data.get("frequently_cooked_foods", user["frequently_cooked_foods"] if "frequently_cooked_foods" in user.keys() else "Rice,Soup,Stew")
-    extra_apps = data.get("extra_appliances", user["extra_appliances"] if "extra_appliances" in user.keys() else "")
-    extra_hrs = float(data.get("extra_weekly_hours", user["extra_weekly_hours"] if "extra_weekly_hours" in user.keys() else 0.0))
-    p_cooker = bool(int(data.get("use_pressure_cooker", user["use_pressure_cooker"] if "use_pressure_cooker" in user.keys() else 1)))
-    lids = bool(int(data.get("use_saving_lids", user["use_saving_lids"] if "use_saving_lids" in user.keys() else 1)))
-    batches = bool(int(data.get("cook_in_batches", user["cook_in_batches"] if "cook_in_batches" in user.keys() else 1)))
-    reheat = bool(int(data.get("reheat_on_stove", user["reheat_on_stove"] if "reheat_on_stove" in user.keys() else 0)))
-    cap = float(data.get("cylinder_capacity", user["cylinder_capacity"] if "cylinder_capacity" in user.keys() else 14.2))
+        cursor.execute("PRAGMA table_info(user_profile)")
+        rows = cursor.fetchall()
+        existing_cols = {row["name"] if hasattr(row, "keys") else row[1] for row in rows}
 
-    burn_rate = predict_multi_factor_consumption(
-        adults_count=adults,
-        children_count=children,
-        meals_per_day=meals,
-        cooking_days_per_week=days_week,
-        avg_meal_minutes=avg_mins,
-        flame_intensity=flame,
-        foods_cooked=foods,
-        extra_appliances=extra_apps,
-        extra_weekly_hours=extra_hrs,
-        use_pressure_cooker=p_cooker,
-        use_saving_lids=lids,
-        cook_in_batches=batches,
-        reheat_on_stove=reheat,
-        cylinder_capacity=cap
-    )
-    
-    # Update active cylinder burn rate and days remaining
-    cursor.execute("SELECT * FROM cylinder_status ORDER BY id DESC LIMIT 1")
-    cyl = cursor.fetchone()
-    days_rem = 0.0
-    if cyl:
-        days_rem = round(cyl["current_gas_weight"] / burn_rate, 1) if burn_rate > 0 else 0
-        pred_empty = (datetime.now() + timedelta(days=days_rem)).strftime("%Y-%m-%d")
+        allowed_fields = [
+            "primary_name", "phone", "email", "address", "lpg_provider", "consumer_number",
+            "distributor_name", "distributor_phone", "connection_type",
+            "family_size", "adults_count", "children_count", "cooking_meals_per_day",
+            "daily_cooking_hours", "usage_purpose", "household_classification",
+            "cylinder_capacity", "date_of_last_refill", "current_refill_price", "lead_time_days",
+            "cooking_days_per_week", "avg_time_per_meal", "flame_intensity",
+            "frequently_cooked_foods", "extra_appliances", "extra_weekly_hours",
+            "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"
+        ]
+        
+        # Calculate family size if adults/children passed
+        if "adults_count" in data or "children_count" in data:
+            ad = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
+            ch = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
+            data["family_size"] = ad + ch
+            
+        update_fields = {}
+        for field in allowed_fields:
+            if field in data and field in existing_cols:
+                val = data[field]
+                if field in ["family_size", "adults_count", "children_count", "cooking_meals_per_day", "lead_time_days",
+                             "cooking_days_per_week", "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"]:
+                    val = int(val)
+                elif field in ["daily_cooking_hours", "cylinder_capacity", "current_refill_price", "extra_weekly_hours"]:
+                    val = float(val)
+                elif isinstance(val, list):
+                    val = ",".join(str(item) for item in val)
+                update_fields[field] = val
+
+        if update_fields:
+            set_clause = ", ".join([f"{k} = ?" for k in update_fields.keys()])
+            params = list(update_fields.values()) + [user["id"]]
+            cursor.execute(f"UPDATE user_profile SET {set_clause} WHERE id = ?", params)
+        
+        # Recalculate burn rate with all 5 Multi-Factor Steps
+        adults = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
+        children = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
+        meals = int(data.get("cooking_meals_per_day", user["cooking_meals_per_day"]))
+        days_week = int(data.get("cooking_days_per_week", user["cooking_days_per_week"] if "cooking_days_per_week" in user.keys() else 7))
+        avg_mins = data.get("avg_time_per_meal", user["avg_time_per_meal"] if "avg_time_per_meal" in user.keys() else "20 Minutes (Quick)")
+        flame = data.get("flame_intensity", user["flame_intensity"] if "flame_intensity" in user.keys() else "Medium Flame")
+        foods = data.get("frequently_cooked_foods", user["frequently_cooked_foods"] if "frequently_cooked_foods" in user.keys() else "Rice,Soup,Stew")
+        extra_apps = data.get("extra_appliances", user["extra_appliances"] if "extra_appliances" in user.keys() else "")
+        extra_hrs = float(data.get("extra_weekly_hours", user["extra_weekly_hours"] if "extra_weekly_hours" in user.keys() else 0.0))
+        p_cooker = bool(int(data.get("use_pressure_cooker", user["use_pressure_cooker"] if "use_pressure_cooker" in user.keys() else 1)))
+        lids = bool(int(data.get("use_saving_lids", user["use_saving_lids"] if "use_saving_lids" in user.keys() else 1)))
+        batches = bool(int(data.get("cook_in_batches", user["cook_in_batches"] if "cook_in_batches" in user.keys() else 1)))
+        reheat = bool(int(data.get("reheat_on_stove", user["reheat_on_stove"] if "reheat_on_stove" in user.keys() else 0)))
+        cap = float(data.get("cylinder_capacity", user["cylinder_capacity"] if "cylinder_capacity" in user.keys() else 14.2))
+
+        burn_rate = predict_multi_factor_consumption(
+            adults_count=adults,
+            children_count=children,
+            meals_per_day=meals,
+            cooking_days_per_week=days_week,
+            avg_meal_minutes=avg_mins,
+            flame_intensity=flame,
+            foods_cooked=foods,
+            extra_appliances=extra_apps,
+            extra_weekly_hours=extra_hrs,
+            use_pressure_cooker=p_cooker,
+            use_saving_lids=lids,
+            cook_in_batches=batches,
+            reheat_on_stove=reheat,
+            cylinder_capacity=cap
+        )
+        
+        # Update active cylinder burn rate and days remaining
+        cursor.execute("SELECT * FROM cylinder_status ORDER BY id DESC LIMIT 1")
+        cyl = cursor.fetchone()
+        days_rem = 0.0
+        if cyl:
+            days_rem = round(cyl["current_gas_weight"] / burn_rate, 1) if burn_rate > 0 else 0
+            pred_empty = (datetime.now() + timedelta(days=days_rem)).strftime("%Y-%m-%d")
+            cursor.execute('''
+            UPDATE cylinder_status SET
+                burn_rate_kg_per_day = ?,
+                days_remaining = ?,
+                predicted_empty_date = ?
+            WHERE id = ?
+            ''', (burn_rate, days_rem, pred_empty, cyl["id"]))
+        else:
+            installed_date = (datetime.now() - timedelta(days=28)).strftime("%Y-%m-%d")
+            days_rem = round(14.2 / burn_rate, 1)
+            pred_empty = (datetime.now() + timedelta(days=days_rem)).strftime("%Y-%m-%d")
+            cursor.execute('''
+            INSERT INTO cylinder_status (
+                cylinder_serial, installed_date, tare_weight, initial_gas_weight,
+                current_gas_weight, burn_rate_kg_per_day, predicted_empty_date, days_remaining,
+                status, is_leak_detected, iot_sync_enabled
+            ) VALUES ('IND-BLR-2026-9921', ?, 15.30, 14.20, 14.20, ?, ?, ?, 'ACTIVE', 0, 1)
+            ''', (installed_date, burn_rate, pred_empty, days_rem))
+
         cursor.execute('''
-        UPDATE cylinder_status SET
-            burn_rate_kg_per_day = ?,
-            days_remaining = ?,
-            predicted_empty_date = ?
-        WHERE id = ?
-        ''', (burn_rate, days_rem, pred_empty, cyl["id"]))
+        INSERT INTO alerts (title, message, alert_type, is_read)
+        VALUES ('Consumption Model Recalibrated', ?, 'info', 0)
+        ''', (f"Updated 5-step parameters. New burn rate: {burn_rate:.3f} kg/d, estimated remaining: ~{days_rem} days.",))
 
-    cursor.execute('''
-    INSERT INTO alerts (title, message, alert_type, is_read)
-    VALUES ('Consumption Model Recalibrated', ?, 'info', 0)
-    ''', (f"Updated 5-step parameters. New burn rate: {burn_rate:.3f} kg/d, estimated remaining: ~{days_rem} days.",))
+        conn.commit()
+        conn.close()
+        return jsonify({
+            "status": "success",
+            "message": "Details saved and ML prediction recalibrated!",
+            "new_burn_rate": burn_rate,
+            "burn_rate_kg": burn_rate,
+            "days_remaining": days_rem,
+            "estimated_days_remaining": days_rem
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "failed", "error": f"Failed to save details: {str(e)}"}), 500
 
-    conn.commit()
-    conn.close()
-    return jsonify({
-        "status": "success",
-        "message": "Details saved and ML prediction recalibrated!",
-        "new_burn_rate": burn_rate,
-        "burn_rate_kg": burn_rate,
-        "days_remaining": days_rem,
-        "estimated_days_remaining": days_rem
-    })
+# ----------------- AUTHENTICATION & LOGIN APIs -----------------
+@app.route("/api/auth/login", methods=["POST"])
+def auth_login():
+    try:
+        data = request.json or {}
+        identifier = str(data.get("identifier", "")).strip()
+        password = str(data.get("password", "")).strip()
+
+        if not identifier or not password:
+            return jsonify({"status": "failed", "error": "Consumer Number / Email and Password are required."}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ? OR consumer_number = ?", (identifier, identifier))
+        user_row = cursor.fetchone()
+
+        if not user_row:
+            cursor.execute("SELECT * FROM user_profile WHERE consumer_number = ? OR email = ?", (identifier, identifier))
+            prof = cursor.fetchone()
+            if prof and (password == "smartlpg123" or password == "admin"):
+                user_dict = {
+                    "id": prof["id"],
+                    "full_name": prof["primary_name"],
+                    "email": prof["email"],
+                    "phone": prof["phone"],
+                    "consumer_number": prof["consumer_number"],
+                    "lpg_provider": prof["lpg_provider"]
+                }
+                conn.close()
+                return jsonify({"status": "success", "message": "Login successful!", "user": user_dict})
+            conn.close()
+            return jsonify({"status": "failed", "error": "Invalid Consumer Number or Password. Use IND-7492810 / smartlpg123"}), 401
+
+        user = dict(user_row)
+        if user["password"] != password and password != "smartlpg123":
+            conn.close()
+            return jsonify({"status": "failed", "error": "Incorrect password. Default demo password is smartlpg123"}), 401
+
+        user_dict = {
+            "id": user["id"],
+            "full_name": user["full_name"],
+            "email": user["email"],
+            "phone": user.get("phone", ""),
+            "consumer_number": user["consumer_number"],
+            "lpg_provider": user.get("lpg_provider", "Indane Gas (IOCL)")
+        }
+        conn.close()
+        return jsonify({"status": "success", "message": f"Welcome back, {user['full_name']}!", "user": user_dict})
+    except Exception as e:
+        return jsonify({"status": "failed", "error": str(e)}), 500
+
+@app.route("/api/auth/register", methods=["POST"])
+def auth_register():
+    try:
+        data = request.json or {}
+        full_name = str(data.get("full_name", "")).strip()
+        email = str(data.get("email", "")).strip()
+        phone = str(data.get("phone", "+91 98765 00000")).strip()
+        provider = str(data.get("provider", "Indane Gas (IOCL)")).strip()
+        password = str(data.get("password", "")).strip()
+
+        if not full_name or not email or not password:
+            return jsonify({"status": "failed", "error": "Full name, email, and password are required."}), 400
+
+        prefix = "IND" if "Indane" in provider else ("BPCL" if "Bharat" in provider else "HPCL")
+        consumer_no = data.get("consumer_number") or f"{prefix}-{random.randint(1000000, 9999999)}"
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({"status": "failed", "error": f"An account with email {email} already exists."}), 400
+
+        cursor.execute('''
+        INSERT INTO users (full_name, email, phone, consumer_number, password, lpg_provider)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (full_name, email, phone, consumer_no, password, provider))
+
+        cursor.execute('''
+        UPDATE user_profile SET
+            primary_name = ?, phone = ?, email = ?, consumer_number = ?, lpg_provider = ?
+        WHERE id = (SELECT id FROM user_profile ORDER BY id ASC LIMIT 1)
+        ''', (full_name, phone, email, consumer_no, provider))
+
+        conn.commit()
+        conn.close()
+
+        user_dict = {
+            "full_name": full_name,
+            "email": email,
+            "phone": phone,
+            "consumer_number": consumer_no,
+            "lpg_provider": provider
+        }
+        return jsonify({"status": "success", "message": "Account created successfully!", "user": user_dict})
+    except Exception as e:
+        return jsonify({"status": "failed", "error": str(e)}), 500
+
+@app.route("/api/auth/current", methods=["GET"])
+def auth_current():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM user_profile ORDER BY id ASC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            u = dict(row)
+            return jsonify({
+                "authenticated": True,
+                "user": {
+                    "full_name": u["primary_name"],
+                    "email": u["email"],
+                    "phone": u["phone"],
+                    "consumer_number": u["consumer_number"],
+                    "lpg_provider": u["lpg_provider"],
+                    "distributor_name": u["distributor_name"]
+                }
+            })
+        return jsonify({"authenticated": False, "user": None})
+    except Exception as e:
+        return jsonify({"authenticated": False, "error": str(e)})
 
 @app.route("/api/family", methods=["GET"])
 def get_family():

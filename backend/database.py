@@ -11,17 +11,29 @@ def get_db_path():
     # We copy the database to /tmp to allow SQLite read/write operations.
     if os.environ.get("VERCEL"):
         db_path = "/tmp/smart_lpg.db"
-        if not os.path.exists(db_path) and os.path.exists(SOURCE_DB):
+        if not os.path.exists(db_path):
+            if os.path.exists(SOURCE_DB):
+                try:
+                    shutil.copyfile(SOURCE_DB, db_path)
+                    os.chmod(db_path, 0o666)
+                except Exception as e:
+                    print(f"Notice: copying DB to /tmp: {e}")
+        else:
             try:
-                shutil.copy2(SOURCE_DB, db_path)
+                os.chmod(db_path, 0o666)
             except Exception:
                 pass
         return db_path
     return SOURCE_DB
 
 def get_db_connection():
-    conn = sqlite3.connect(get_db_path(), timeout=30.0)
+    db_file = get_db_path()
+    conn = sqlite3.connect(db_file, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA busy_timeout = 5000")
+    except Exception:
+        pass
     return conn
 
 def init_db():
@@ -171,6 +183,20 @@ def init_db():
     )
     ''')
 
+    # Users Authentication Table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT,
+        consumer_number TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        lpg_provider TEXT DEFAULT 'Indane Gas (IOCL)',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     conn.commit()
     migrate_db(conn)
     seed_initial_data(conn)
@@ -299,8 +325,18 @@ def seed_initial_data(conn):
         VALUES ('DATA-STREAM-NODE-1', 17.75, 15.30, 2.45, 94, 0)
         ''')
 
+    # Seed Demo Accounts in users table
+    cursor.execute("SELECT COUNT(*) FROM users")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''
+        INSERT INTO users (full_name, email, phone, consumer_number, password, lpg_provider)
+        VALUES 
+        ('Mohammed Huzaifa Khan', 'huzaifa.aftab.smartlpg@gmail.com', '+91 98765 43210', 'IND-7492810', 'smartlpg123', 'Indane Gas (IOCL)'),
+        ('Mohammad Aftab Ahmed', 'aftab.ahmed@smartlpg.in', '+91 94481 29401', 'IND-8821940', 'smartlpg123', 'Indane Gas (IOCL)')
+        ''')
+
     conn.commit()
 
 if __name__ == "__main__":
     init_db()
-    print("Database initialized successfully at:", DB_PATH)
+    print("Database initialized successfully at:", get_db_path())
