@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartLPG - Intelligent LPG Refill Prediction & Booking System</title>
+  <title>SmartLPG - Intelligent LPG Refill Prediction &amp; Booking System</title>
   <meta name="description" content="AI-driven LPG cylinder depletion forecasting, automated refill alerts, consumption analytics, and authorized one-click booking management.">
   <link rel="icon" type="image/png" href="/static/images/logo.png">
   <link rel="stylesheet" href="/static/css/style.css">
@@ -13,96 +13,97 @@
   <!-- Toast Notification Stack -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <div class="app-container">
-
-    <!-- Top Navigation Header -->
-    <header class="top-header glass-panel">
+  <!-- Top Navigation Header -->
+  <header class="top-header">
+    <div class="top-header-inner">
       <div class="brand-section">
         <img src="/static/images/logo.png" alt="SmartLPG Cylinder Mascot" class="brand-mascot-logo" id="navBrandLogo">
-        <div>
-          <h1 class="brand-title">
-            SmartLPG
-            <span class="project-tag" style="background: rgba(255, 119, 0, 0.15); color: #ff7700; border-color: rgba(255, 119, 0, 0.3); font-size: 10px; margin-left: 6px;">✨ AI Model</span>
-          </h1>
+        <div class="brand-title-group">
+          <h1 class="brand-title">SmartLPG</h1>
+          <span class="project-tag">AI</span>
         </div>
       </div>
 
-      <div class="header-actions">
-        <!-- Quick Indicators (Inspired by Landing Reference) -->
-        <div class="status-pill" style="font-size: 12px; gap: 6px;" title="Current Cylinder Level">
-          <span style="color: #10b981;">●</span> Gas Left: <strong id="navGasLeft" style="color: #ff7700;">17.3%</strong>
+      <nav class="header-actions" aria-label="Primary Navigation">
+        <div class="status-pill nav-gas-pill" title="Current Cylinder Level">
+          <span class="status-dot"></span>
+          <span>Gas Left: <strong id="navGasLeft" class="tabular-nums">17.3%</strong></span>
         </div>
-        <div class="status-pill" style="font-size: 12px; font-weight: 700;">₹ INR</div>
 
-        <!-- 5-Step Details Wizard Trigger -->
-        <button class="btn-secondary" id="openFamilyModalBtn" style="display: flex; align-items: center; gap: 8px;" title="5-Step Multi-Factor LPG Details Wizard">
-          <span>📋</span>
+        <div class="nav-divider" aria-hidden="true"></div>
+
+        <button type="button" class="nav-link-btn" id="openFamilyModalBtn" title="5-Step Multi-Factor LPG Details Wizard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
           <span>Details</span>
         </button>
 
-        <!-- Quick Dashboard Jump -->
-        <a href="#dashboardSection" class="btn-secondary" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13px;" title="Jump to Live Dashboard">
-          <span>📊</span>
+        <a href="#dashboardSection" class="nav-link-btn" title="Jump to Live Dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
           <span>Dashboard</span>
         </a>
 
-        <!-- Audit Report Modal Trigger -->
-        <button class="btn-secondary" id="openAuditReportBtn" style="display: flex; align-items: center; gap: 8px;" title="Print/Export LPG Consumption &amp; Refill Audit Report">
-          <span>📄</span>
+        <button type="button" class="nav-link-btn" id="openAuditReportBtn" title="Print/Export LPG Consumption &amp; Refill Audit Report">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Audit Report</span>
         </button>
 
-        <!-- Alert Bell -->
-        <button class="action-btn-circle" id="alertsBellBtn" title="Alerts &amp; Notifications">
-          🔔
-          <span class="badge-count" id="unreadAlertsBadge" style="display: none;">0</span>
+        <div class="nav-divider" aria-hidden="true"></div>
+
+        <button type="button" class="action-btn-circle" id="alertsBellBtn" title="Alerts &amp; Notifications" aria-label="Alerts">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge-count tabular-nums" id="unreadAlertsBadge" style="display: none;">0</span>
         </button>
 
-        <!-- Theme Toggle -->
-        <button class="action-btn-circle" id="themeToggleBtn" title="Toggle Dark/Light Mode">
-          ☀️
+        <button type="button" class="theme-segmented-toggle" id="themeToggleBtn" title="Toggle Dark / Light Mode" aria-label="Toggle Dark or Light Mode">
+          <span class="theme-toggle-thumb" aria-hidden="true"></span>
+          <span class="theme-opt theme-opt-dark" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </span>
+          <span class="theme-opt theme-opt-light" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </span>
         </button>
 
-        <!-- User Authentication & Account Trigger -->
-        <button class="btn-secondary" id="openLoginModalBtn" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12.5px; border-color: rgba(255, 119, 0, 0.35); color: #ff7700; font-weight: 700;" title="User Login &amp; Account Settings">
-          <span>🔐</span>
+        <button type="button" class="nav-auth-btn" id="openLoginModalBtn" title="User Login &amp; Account Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
           <span id="navUserBtnText">Sign In</span>
         </button>
 
-        <!-- Profile Settings Trigger (Icon Only) -->
-        <button class="action-btn-circle" id="openProfileModalBtn" title="Registered User &amp; Gas Provider Details" aria-label="Profile">
-          <span>👤</span>
+        <button type="button" class="action-btn-circle" id="openProfileModalBtn" title="Registered User &amp; Gas Provider Details" aria-label="Profile">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </button>
-      </div>
-    </header>
+      </nav>
+    </div>
+  </header>
 
-    <!-- LANDING HERO SECTION (AI Multi-Factor LPG Depletion Forecaster) -->
+  <div class="app-container">
+
+    <!-- COMPACT HERO BANNER -->
     <section class="landing-hero-card" id="landingHeroSection">
-      <div class="landing-hero-content-wrap">
-        <div class="landing-hero-text">
+      <div class="hero-main-row">
+        <div class="hero-copy">
           <div class="landing-badge-pill">
-            <span>✨ Multi-Factor LPG Gas Consumption Modeling</span>
+            <span class="hero-badge-dot"></span>
+            <span>Multi-Factor LPG Depletion Forecasting</span>
           </div>
-
-          <h1 class="landing-hero-headline">
-            Know When Your Gas Will Finish<br>
-            <span class="headline-gradient">— Before It Does.</span>
-          </h1>
-
+          <h2 class="landing-hero-headline">
+            Know When Your Gas Will Finish — Before It Does.
+          </h2>
           <p class="landing-hero-subtext">
-            Smart AI-powered prediction based on your cooking habits, household size, food intensity, and extra gas usage. 100% data-driven software with zero hardware required.
+            Sensor-free ML forecasting based on household size, cooking habits, and burn intensity. Zero hardware required.
           </p>
-
-          <div class="landing-cta-group">
+          <div class="landing-cta-group" style="margin-top: 16px;">
             <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
-              <span>🔥 Start Prediction</span>
-              <span style="font-size: 16px;">➔</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <span>Start Prediction</span>
             </button>
             <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
-              <span>📊 Open Live Dashboard</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+              <span>Open Live Dashboard</span>
             </a>
-            <button type="button" class="btn-secondary landing-cta-secondary" id="heroLoginBtn" style="border-color: rgba(255, 119, 0, 0.4);">
-              <span>🔐 Sign In</span>
+            <button type="button" class="btn-secondary landing-cta-secondary" id="heroLoginBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              <span>Sign In</span>
             </button>
           </div>
         </div>
@@ -112,208 +113,227 @@
         </div>
       </div>
 
-      <!-- 4 Value Proposition Pillars -->
+      <!-- Inline Metadata Strip -->
       <div class="landing-value-props">
-        <div class="value-prop-pill">
-          <span class="prop-icon">🟢</span>
+        <div class="value-prop-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span>No Hardware Needed</span>
         </div>
-        <div class="value-prop-pill">
-          <span class="prop-icon">🎯</span>
+        <span class="prop-sep" aria-hidden="true"></span>
+        <div class="value-prop-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
           <span>Realistic Confidence Score</span>
         </div>
-        <div class="value-prop-pill" id="landingLoginPill" style="cursor: pointer;" title="Click to Sign In">
-          <span class="prop-icon">🔐</span>
+        <span class="prop-sep" aria-hidden="true"></span>
+        <div class="value-prop-item value-prop-clickable" id="landingLoginPill" title="Click to Sign In">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <span>Secure User Login</span>
         </div>
-        <div class="value-prop-pill">
-          <span class="prop-icon">📄</span>
+        <span class="prop-sep" aria-hidden="true"></span>
+        <div class="value-prop-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           <span>PDF &amp; Audit Export</span>
         </div>
       </div>
     </section>
 
-    <!-- Emergency Gas Leak Alert Banner (Hidden by default, activated on leak detection) -->
+    <!-- Emergency Gas Leak Alert Banner -->
     <aside class="emergency-leak-banner" id="emergencyLeakBanner">
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <span style="font-size: 32px;">🚨</span>
+      <div class="alert-content">
+        <div class="alert-icon-box critical">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
         <div>
-          <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 2px;">EMERGENCY: Rapid Gas Depletion / Leak Detected!</h2>
-          <p style="font-size: 13.5px;">Safety anomaly detection algorithm identified an abnormal depletion spike (-0.48 kg / 10m). Turn off cylinder regulator valve immediately, open all kitchen windows, and avoid electrical switches.</p>
+          <h2 class="alert-banner-heading">EMERGENCY: Rapid Gas Depletion / Leak Detected</h2>
+          <p class="alert-desc">Safety anomaly detection identified an abnormal depletion spike (-0.48 kg / 10m). Turn off cylinder regulator valve immediately, open all kitchen windows, and avoid electrical switches.</p>
         </div>
       </div>
-      <button class="btn-secondary" style="background: white; color: #b91c1c; font-weight: 700; white-space: nowrap;" onclick="simulateLeakAction()">
-        ✓ Clear Leak Alert
+      <button type="button" class="btn-secondary leak-clear-btn" onclick="simulateLeakAction()">
+        Clear Leak Alert
       </button>
     </aside>
 
     <!-- Smart Refill Advisory Banner -->
     <aside class="alert-banner-card" id="alertBannerCard" style="display: none;">
       <div class="alert-content">
-        <span class="alert-icon">⚠️</span>
+        <div class="alert-icon-box warning">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
         <div>
           <div class="alert-title" id="alertTitleText">Refill Recommended</div>
           <div class="alert-desc" id="alertDescText">LPG reserve reaches critical threshold in 4.6 days. Considering agency lead time, booking now prevents cooking disruption.</div>
         </div>
       </div>
-      <button class="btn-primary" style="width: auto; padding: 10px 20px;" onclick="openModal('bookingModal')">
+      <button type="button" class="btn-primary alert-cta-btn" onclick="openModal('bookingModal')">
         Book Refill Now
       </button>
     </aside>
 
-    <!-- PRIMARY DASHBOARD HERO GRID -->
-    <main class="dashboard-grid">
+    <!-- PRIMARY 3-COLUMN DASHBOARD GRID -->
+    <main class="dashboard-grid" id="dashboardSection">
 
-      <!-- CARD 1: Cylinder Physical & Telemetry Level -->
-      <section class="glass-panel" id="cylinderGaugeSection">
+      <!-- CARD 1: Live Cylinder Telemetry -->
+      <section class="glass-panel dashboard-card" id="cylinderGaugeSection">
         <div class="card-header">
           <div class="card-title">
-            <span>⚖️</span> Live Cylinder Telemetry
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><rect x="6" y="6" width="12" height="16" rx="4"/><path d="M6 14h12"/></svg>
+            <span>Live Cylinder Telemetry</span>
           </div>
           <span class="status-pill" id="cylinderStatusBadge">Active</span>
         </div>
-        <div class="card-body">
+
+        <div class="card-body card-body-flex">
           <div class="cylinder-visual-wrapper">
-            <!-- 3D Styled Cylinder Tank -->
             <div class="cylinder-3d-model" id="cylinder3DModel" title="Real-Time LPG Gas Gauge">
               <div class="cylinder-cap"></div>
+              <div class="cylinder-ticks" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
               <div class="cylinder-fluid-level" id="cylinderFluid" style="height: 18%;"></div>
             </div>
 
-            <!-- Metrics -->
-            <div class="gauge-metrics">
-              <div class="gas-percentage-display" id="gasPercentageVal">17.3%</div>
-              <div class="gas-weight-display" id="gasWeightVal">2.45 kg Net LPG</div>
-              <table class="weight-breakdown-table">
-                <tbody>
-                  <tr>
-                    <td>Gross Weight (Cylinder + Gas):</td>
-                    <td id="grossWeightVal">17.75 kg</td>
-                  </tr>
-                  <tr>
-                    <td>Cylinder Tare Weight:</td>
-                    <td id="tareWeightVal">15.30 kg</td>
-                  </tr>
-                  <tr>
-                    <td>Cylinder Serial:</td>
-                    <td id="cylSerialVal">CYL-IND-9942B</td>
-                  </tr>
-                  <tr>
-                    <td>Installed Date:</td>
-                    <td id="cylInstallDateVal">2026-09-24</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="gauge-hero-readout">
+              <div class="gas-percentage-display tabular-nums" id="gasPercentageVal">17.3%</div>
+              <div class="gas-weight-display tabular-nums" id="gasWeightVal">2.45 kg Net LPG</div>
             </div>
           </div>
 
-          <div style="font-size: 12px; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
-            Architecture: 100% Data-Driven Software &amp; ML Analytics Engine
+          <table class="weight-breakdown-table">
+            <tbody>
+              <tr>
+                <td>Gross Weight (Cylinder + Gas)</td>
+                <td id="grossWeightVal" class="tabular-nums">17.75 kg</td>
+              </tr>
+              <tr>
+                <td>Cylinder Tare Weight</td>
+                <td id="tareWeightVal" class="tabular-nums">15.30 kg</td>
+              </tr>
+              <tr>
+                <td>Cylinder Serial</td>
+                <td id="cylSerialVal" class="tabular-nums">CYL-IND-9942B</td>
+              </tr>
+              <tr>
+                <td>Installed Date</td>
+                <td id="cylInstallDateVal" class="tabular-nums">2026-09-24</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card-footer-note">
+            100% Data-Driven Software &amp; ML Analytics Engine
           </div>
         </div>
       </section>
 
-      <!-- CARD 2: ML Depletion Prediction & Advisory -->
-      <section class="glass-panel" id="mlPredictionSection">
+      <!-- CARD 2: ML Depletion Forecasting -->
+      <section class="glass-panel dashboard-card" id="mlPredictionSection">
         <div class="card-header">
           <div class="card-title">
-            <span>🧠</span> ML Depletion Forecasting
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>ML Depletion Forecasting</span>
           </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="confidence-pill" id="predConfidenceVal">🎯 97% Confidence</span>
-            <span style="font-size: 11px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); padding: 4px 8px; border-radius: 6px;">
-              Random Forest (R²: 0.96)
-            </span>
+          <div class="header-meta-group">
+            <span class="confidence-pill tabular-nums" id="predConfidenceVal">97% Confidence</span>
+            <span class="model-meta-tag">RF · R² 0.96</span>
           </div>
         </div>
-        <div class="card-body">
+
+        <div class="card-body card-body-flex">
           <div class="prediction-highlight-box">
-            <div class="pred-days-count" id="predDaysVal">4.6 Days</div>
+            <div class="pred-days-count tabular-nums" id="predDaysVal">4.6 Days</div>
             <div class="pred-label">Estimated Remaining Gas Period</div>
           </div>
 
           <div class="prediction-specs-grid">
             <div class="spec-tile">
               <div class="spec-title">Predicted Burn Rate</div>
-              <div class="spec-value" id="predBurnRateVal">0.42 kg / day</div>
+              <div class="spec-value tabular-nums" id="predBurnRateVal">0.42 kg / day</div>
             </div>
             <div class="spec-tile">
               <div class="spec-title">Daily Fuel Cost</div>
-              <div class="spec-value" id="predDailyCostVal" style="color: #38bdf8;">₹25.40 / day</div>
+              <div class="spec-value tabular-nums" id="predDailyCostVal">₹25.40 / day</div>
             </div>
             <div class="spec-tile">
               <div class="spec-title">Predicted Empty Date</div>
-              <div class="spec-value" id="predDepletionDateVal">27 Oct 2026</div>
+              <div class="spec-value tabular-nums" id="predDepletionDateVal">27 Oct 2026</div>
             </div>
             <div class="spec-tile">
               <div class="spec-title">Recommended Booking</div>
-              <div class="spec-value" style="color: #fbbf24;" id="predRecBookingVal">24 Oct 2026</div>
+              <div class="spec-value spec-value-amber tabular-nums" id="predRecBookingVal">24 Oct 2026</div>
             </div>
           </div>
 
-          <button class="btn-primary" id="quickBookRefillBtn">
-            ⚡ Book LPG Refill Now
-          </button>
+          <div class="card-cta-anchor">
+            <button type="button" class="btn-primary" id="quickBookRefillBtn">
+              Book LPG Refill Now
+            </button>
+          </div>
         </div>
       </section>
 
-      <!-- CARD 3: Active Refill Booking & Live Delivery Tracker -->
-      <section class="glass-panel" id="deliveryTrackerSection">
+      <!-- CARD 3: Refill Delivery Tracking -->
+      <section class="glass-panel dashboard-card" id="deliveryTrackerSection">
         <div class="card-header">
           <div class="card-title">
-            <span>🚚</span> Refill Delivery Tracking
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Refill Delivery Tracking</span>
           </div>
-          <span style="font-size: 12px; color: var(--text-secondary);" id="agencyDisplay">Shanthi Indane</span>
+          <span class="agency-tag" id="agencyDisplay">Shanthi Indane</span>
         </div>
-        <div class="card-body">
-          <div id="noActiveBookingState" style="display: none; text-align: center; padding: 30px 10px;">
-            <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
-            <div style="font-weight: 600; margin-bottom: 6px;">No Active Booking in Progress</div>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Click below to book your next refill cylinder with one click.</p>
-            <button class="btn-primary" onclick="openModal('bookingModal')">Place One-Click Order</button>
+
+        <div class="card-body card-body-flex">
+          <div id="noActiveBookingState" class="empty-booking-state" style="display: none;">
+            <div class="empty-booking-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            </div>
+            <div class="empty-booking-title">No Active Booking in Progress</div>
+            <p class="empty-booking-desc">Place a one-click refill order with your registered LPG distributor.</p>
+            <button type="button" class="btn-primary" onclick="openModal('bookingModal')">Place One-Click Order</button>
           </div>
 
-          <div id="activeBookingState">
+          <div id="activeBookingState" class="active-booking-wrap">
             <div class="delivery-info-header">
-              <div>Ref: <strong id="trackBookingIdVal">LPG-IND-2026-9402</strong></div>
-              <div>Est. Delivery: <strong id="trackEstDeliveryVal" style="color: #38bdf8;">24 Oct 2026</strong></div>
+              <div>Ref: <strong id="trackBookingIdVal" class="tabular-nums">LPG-IND-2026-9402</strong></div>
+              <div>Est. Delivery: <strong id="trackEstDeliveryVal" class="tabular-nums">24 Oct 2026</strong></div>
             </div>
 
-            <!-- Stepper -->
+            <!-- 5-Stage Stepper -->
             <div class="tracking-stepper">
               <div class="step-item" id="stepItem1">
-                <div class="step-circle">1</div>
+                <div class="step-circle tabular-nums">1</div>
                 <div class="step-text">
                   <div class="step-title">Order Booked</div>
                   <div class="step-subtitle">Refill request verified by distributor</div>
                 </div>
               </div>
               <div class="step-item" id="stepItem2">
-                <div class="step-circle">2</div>
+                <div class="step-circle tabular-nums">2</div>
                 <div class="step-text">
                   <div class="step-title">Order Confirmed</div>
                   <div class="step-subtitle">Cash voucher generated &amp; scheduled</div>
                 </div>
               </div>
               <div class="step-item" id="stepItem3">
-                <div class="step-circle">3</div>
+                <div class="step-circle tabular-nums">3</div>
                 <div class="step-text">
                   <div class="step-title">Dispatched from Bottling Plant</div>
-                  <div class="step-subtitle">Cylinder en route to local distribution hub</div>
+                  <div class="step-subtitle">Cylinder en route to local hub</div>
                 </div>
               </div>
               <div class="step-item" id="stepItem4">
-                <div class="step-circle">4</div>
+                <div class="step-circle tabular-nums">4</div>
                 <div class="step-text">
                   <div class="step-title">Out for Delivery</div>
-                  <div class="step-subtitle">Delivery partner arriving at your doorstep</div>
+                  <div class="step-subtitle">Delivery partner arriving at doorstep</div>
                 </div>
               </div>
               <div class="step-item" id="stepItem5">
-                <div class="step-circle">5</div>
+                <div class="step-circle tabular-nums">5</div>
                 <div class="step-text">
                   <div class="step-title">Delivered &amp; Installed</div>
-                  <div class="step-subtitle">Cylinder connected &amp; replenishment verified</div>
+                  <div class="step-subtitle">Cylinder connected &amp; verified</div>
                 </div>
               </div>
             </div>
@@ -321,37 +341,40 @@
             <!-- Delivery Partner & Secure OTP -->
             <div class="delivery-agent-card">
               <div>
-                <div style="font-weight: 700; color: var(--text-primary);" id="trackAgentNameVal">Ramesh Kumar</div>
-                <div style="font-size: 11.5px; color: var(--text-muted);" id="trackAgentPhoneVal">+91 94481 29401</div>
+                <div class="agent-name" id="trackAgentNameVal">Ramesh Kumar</div>
+                <div class="agent-phone tabular-nums" id="trackAgentPhoneVal">+91 94481 29401</div>
               </div>
-              <div style="text-align: right;">
-                <div style="font-size: 10.5px; text-transform: uppercase; color: var(--text-muted);">Delivery OTP</div>
-                <div class="otp-pill" id="trackOtpVal">4912</div>
+              <div class="otp-box">
+                <div class="otp-label">Delivery OTP</div>
+                <div class="otp-pill tabular-nums" id="trackOtpVal">4912</div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 6px;">
-              <button class="btn-secondary" id="advanceStatusBtn" style="flex: 1;">
-                ▶ Advance Delivery Status (Demo)
-              </button>
-              <button class="btn-secondary" id="resetTrackingBtn" style="padding: 10px 14px; font-weight: 600; white-space: nowrap;" title="Reset Tracking Demo back to Step 1">
-                🔄 Reset Demo
-              </button>
-            </div>
-
-            <!-- 25-Day Regulatory Inter-Booking Lock Card -->
-            <div id="bookingLockNotice" class="booking-lock-banner" style="display: none;">
-              <div style="display: flex; align-items: flex-start; gap: 8px;">
-                <span style="font-size: 16px;">🔒</span>
-                <div>
-                  <strong>Regulatory Inter-Booking Rule Active:</strong>
-                  <div>Refill cylinders can only be booked once every 25 days. Next eligible booking: <strong id="lockEligibleDate" style="color: #ffffff;">20 Dec 2026</strong> (<span id="lockDaysLeft">18</span> days remaining).</div>
-                </div>
-              </div>
-              <div style="margin-top: 8px; text-align: right;">
-                <button type="button" class="btn-secondary" id="fastForwardBookingBtn" style="padding: 4px 10px; font-size: 11px; font-weight: 600;" title="Simulates 26 days elapsed to test fresh booking">
-                  ⏩ Fast-Forward 25 Days (Demo)
+            <!-- Demo Controls & Lock Notice Utility Panel -->
+            <div class="tracker-utility-footer">
+              <div class="tracker-demo-actions">
+                <button type="button" class="btn-secondary tracker-advance-btn" id="advanceStatusBtn">
+                  Advance Delivery Status (Demo)
                 </button>
+                <button type="button" class="btn-secondary tracker-reset-btn" id="resetTrackingBtn" title="Reset Tracking Demo back to Step 1">
+                  Reset
+                </button>
+              </div>
+
+              <!-- 25-Day Regulatory Inter-Booking Lock Card -->
+              <div id="bookingLockNotice" class="booking-lock-banner" style="display: none;">
+                <div class="lock-banner-row">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <div>
+                    <strong>25-Day Regulatory Lock Active:</strong>
+                    <span>Next eligible booking <strong id="lockEligibleDate" class="tabular-nums">20 Dec 2026</strong> (<span id="lockDaysLeft" class="tabular-nums">18</span>d left).</span>
+                  </div>
+                </div>
+                <div class="lock-banner-action">
+                  <button type="button" class="btn-secondary fast-forward-btn" id="fastForwardBookingBtn" title="Simulates 26 days elapsed to test fresh booking">
+                    Fast-Forward 25 Days (Demo)
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -364,101 +387,99 @@
     <section class="secondary-grid">
 
       <!-- Historical Consumption Graph -->
-      <div class="glass-panel">
+      <div class="glass-panel dashboard-card">
         <div class="card-header">
           <div class="card-title">
-            <span>📈</span> Cylinder Lifespan &amp; Depletion Analytics
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Cylinder Lifespan &amp; Depletion Analytics</span>
           </div>
           <div class="chart-toggle-group">
-            <button type="button" class="chart-tab-btn active" id="tabChartHistory">History (Past 6 Cycles)</button>
+            <button type="button" class="chart-tab-btn active" id="tabChartHistory">History (6 Cycles)</button>
             <button type="button" class="chart-tab-btn" id="tabChartProjection">Countdown Curve</button>
           </div>
         </div>
-        <div class="card-body">
+        <div class="card-body card-body-flex">
           <div class="chart-container-box">
-            <canvas id="consumptionChartCanvas" style="width: 100%; height: 100%;"></canvas>
+            <canvas id="consumptionChartCanvas"></canvas>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 14px;">
+          <div class="chart-footer-meta">
             <span id="chartCaptionText">● Durations reflect actual days lasted per 14.2 kg cylinder</span>
-            <span>Refill Consumption Analytics Report</span>
+            <span>Refill Consumption Analytics</span>
           </div>
         </div>
       </div>
 
       <!-- AI What-If Consumption Predictor -->
-      <div class="glass-panel">
+      <div class="glass-panel dashboard-card">
         <div class="card-header">
           <div class="card-title">
-            <span>🔮</span> AI Consumption "What-If" Calculator
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            <span>AI "What-If" Calculator</span>
           </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="confidence-pill" id="simConfidenceBadge">🎯 97% Confidence</span>
-            <span style="font-size: 11px; color: var(--accent-cyan); font-weight: 700;">Live ML Model</span>
+          <div class="header-meta-group">
+            <span class="confidence-pill tabular-nums" id="simConfidenceBadge">97% Confidence</span>
           </div>
         </div>
-        <div class="card-body">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="card-body card-body-flex">
+          <div class="sim-sliders-row">
             <div class="simulator-form-group">
-              <label>Household Members: <strong id="simFamilyVal">4</strong></label>
+              <label>Household Members <strong id="simFamilyVal" class="tabular-nums">4</strong></label>
               <input type="range" class="range-slider" id="simFamilySize" min="1" max="8" value="4">
             </div>
 
             <div class="simulator-form-group">
-              <label>Cooked Meals / Day: <strong id="simMealsVal">3</strong></label>
+              <label>Cooked Meals / Day <strong id="simMealsVal" class="tabular-nums">3</strong></label>
               <input type="range" class="range-slider" id="simMeals" min="1" max="4" value="3">
             </div>
           </div>
 
           <div class="simulator-form-group">
-            <label>Stove Lit Hours / Day: <strong id="simHoursVal">2.8 hrs</strong></label>
+            <label>Stove Lit Hours / Day <strong id="simHoursVal" class="tabular-nums">2.8 hrs</strong></label>
             <input type="range" class="range-slider" id="simHours" min="0.5" max="6.0" step="0.1" value="2.8">
           </div>
 
-          <!-- Multi-Factor Flame Intensity Selector -->
           <div class="simulator-form-group">
-            <label>Burner Flame Intensity:</label>
+            <label>Burner Flame Intensity</label>
             <div class="flame-intensity-group" id="simFlameGroup">
-              <button type="button" class="flame-pill-btn" data-flame="Low">🔥 Low (Simmer)</button>
-              <button type="button" class="flame-pill-btn active" data-flame="Medium">🔥🔥 Medium (Standard)</button>
-              <button type="button" class="flame-pill-btn" data-flame="High">🔥🔥🔥 High (Intense)</button>
+              <button type="button" class="flame-pill-btn" data-flame="Low">Low (Simmer)</button>
+              <button type="button" class="flame-pill-btn active" data-flame="Medium">Medium</button>
+              <button type="button" class="flame-pill-btn" data-flame="High">High (Intense)</button>
             </div>
           </div>
 
-          <!-- Cylinder Capacity Selector -->
           <div class="simulator-form-group">
-            <label>Cylinder Specification:</label>
-            <select class="form-select" id="simCylinderCap" style="padding: 8px 12px; font-size: 13px;">
+            <label>Cylinder Specification</label>
+            <select class="form-select sim-select" id="simCylinderCap">
               <option value="14.2" selected>14.2 kg Subsidized Domestic (Standard)</option>
               <option value="5.0">5.0 kg Chhotu Domestic / Rural</option>
               <option value="19.0">19.0 kg Commercial Cylinder</option>
             </select>
           </div>
 
-          <!-- Efficiency Mode Toggle Switch -->
           <label class="toggle-switch-label">
             <div>
-              <strong style="font-size: 13px; color: var(--text-primary);">Batch Cooking &amp; Lid Mode</strong>
-              <div style="font-size: 11.5px; color: var(--text-muted);">Saves ~15% fuel via residual heat &amp; pressure lid</div>
+              <strong class="toggle-title">Batch Cooking &amp; Lid Mode</strong>
+              <div class="toggle-sub">Saves ~15% fuel via residual heat &amp; pressure lid</div>
             </div>
             <input type="checkbox" id="simEfficiencyMode">
           </label>
 
-          <div class="simulator-result-box" style="margin-top: 16px;">
-            <div>
-              <div class="sim-metric-val" id="simResultBurnRate">0.42 kg/d</div>
-              <div class="sim-metric-lbl">Daily Burn Rate</div>
+          <div class="simulator-result-box">
+            <div class="sim-metric-item">
+              <div class="sim-metric-val tabular-nums" id="simResultBurnRate">0.42 kg/d</div>
+              <div class="sim-metric-lbl">Daily Burn</div>
             </div>
-            <div>
-              <div class="sim-metric-val" id="simResultLongevity" style="color: #ff7700;">~33.8 Days</div>
+            <div class="sim-metric-item">
+              <div class="sim-metric-val sim-val-accent tabular-nums" id="simResultLongevity">~33.8 Days</div>
               <div class="sim-metric-lbl">Est. Longevity</div>
             </div>
-            <div>
-              <div class="sim-metric-val" id="simResultDailyCost" style="color: #38bdf8;">₹25.40/d</div>
-              <div class="sim-metric-lbl">Daily Fuel Cost</div>
+            <div class="sim-metric-item">
+              <div class="sim-metric-val tabular-nums" id="simResultDailyCost">₹25.40/d</div>
+              <div class="sim-metric-lbl">Daily Cost</div>
             </div>
-            <div>
-              <div class="sim-metric-val" id="simResultMonthly" style="color: var(--accent-emerald);">₹762 / Mo</div>
-              <div class="sim-metric-lbl">Monthly Budget</div>
+            <div class="sim-metric-item">
+              <div class="sim-metric-val sim-val-emerald tabular-nums" id="simResultMonthly">₹762 / Mo</div>
+              <div class="sim-metric-lbl">Monthly</div>
             </div>
           </div>
         </div>
@@ -467,83 +488,95 @@
     </section>
 
     <!-- SECTION 3: GAS CONSERVATION & SMART ENERGY ADVISOR -->
-    <section class="glass-panel" style="margin-bottom: 32px; padding: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
-        <div style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-          <span>💡</span> LPG Conservation &amp; Household Fuel Efficiency Advisor
+    <section class="glass-panel advisor-section">
+      <div class="advisor-section-header">
+        <div>
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.7.5 1 1.2 1 2v.3h6v-.3c0-.8.3-1.5 1-2A7 7 0 0 0 12 2z"/></svg>
+            <span>LPG Conservation &amp; Fuel Efficiency Advisor</span>
+          </div>
+          <p class="advisor-subtitle">
+            Empirical fuel conservation techniques modeled from domestic kitchen energy studies to reduce burn rate and lower monthly expenditure.
+          </p>
         </div>
-        <span class="confidence-pill" style="font-size: 12px;">🌱 Potential Savings: +4 to +6 Days per Cylinder</span>
+        <span class="confidence-pill">Potential Savings: +4 to +6 Days / Cylinder</span>
       </div>
-      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-        Empirical fuel conservation techniques modeled from domestic kitchen energy studies to reduce burn rate and lower monthly LPG expenditure.
-      </p>
 
       <div class="advisor-grid">
         <div class="tip-card">
           <div>
             <div class="tip-header">
-              <span class="tip-icon">🍲</span>
+              <span class="tip-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M9 6h6"/><path d="M12 6V4"/></svg>
+              </span>
               <div class="tip-title">Cover Pots &amp; Pressure Cook</div>
             </div>
             <div class="tip-body">
-              Trapping steam with tight lids reduces heat loss and accelerates boiling. Using pressure cookers for rice and pulses cuts cooking gas consumption by up to 25%.
+              Trapping steam with tight lids reduces heat loss and accelerates boiling. Using pressure cookers for rice and pulses cuts gas use by up to 25%.
             </div>
           </div>
-          <span class="tip-badge">Saves ~0.06 kg/day (₹110/mo)</span>
+          <span class="tip-badge tabular-nums">Saves ~0.06 kg/day (₹110/mo)</span>
         </div>
 
         <div class="tip-card">
           <div>
             <div class="tip-header">
-              <span class="tip-icon">🔥</span>
+              <span class="tip-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              </span>
               <div class="tip-title">Flame Base Calibration</div>
             </div>
             <div class="tip-body">
-              Regulate burner flames to remain completely underneath the pot base. Flames licking up vessel sides dissipate into ambient kitchen air without heating food.
+              Regulate burner flames to remain completely underneath the pot base. Flames licking up vessel sides dissipate heat into ambient air.
             </div>
           </div>
-          <span class="tip-badge">Prevents 15–18% Fuel Waste</span>
+          <span class="tip-badge tabular-nums">Prevents 15–18% Fuel Waste</span>
         </div>
 
         <div class="tip-card">
           <div>
             <div class="tip-header">
-              <span class="tip-icon">💧</span>
+              <span class="tip-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+              </span>
               <div class="tip-title">Pre-Soaking &amp; Defrosting</div>
             </div>
             <div class="tip-body">
-              Soak lentils, beans, and grains in water for 30 minutes before lighting the stove. Always bring refrigerated foods to room temperature before cooking.
+              Soak lentils, beans, and grains for 30 minutes before lighting the stove. Bring refrigerated foods to room temperature before cooking.
             </div>
           </div>
-          <span class="tip-badge">Cuts Stove Time by ~20%</span>
+          <span class="tip-badge tabular-nums">Cuts Stove Time by ~20%</span>
         </div>
 
         <div class="tip-card">
           <div>
             <div class="tip-header">
-              <span class="tip-icon">📦</span>
+              <span class="tip-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </span>
               <div class="tip-title">Batch Cooking Strategy</div>
             </div>
             <div class="tip-body">
-              Prepare multiple dishes back-to-back while burners and vessel racks remain hot. Utilizing residual thermal energy avoids cold burner reheating cycles.
+              Prepare multiple dishes back-to-back while burners and vessel racks remain hot. Residual thermal energy avoids cold burner reheating cycles.
             </div>
           </div>
-          <span class="tip-badge">+3.8 Extra Days Lifespan</span>
+          <span class="tip-badge tabular-nums">+3.8 Extra Days Lifespan</span>
         </div>
       </div>
     </section>
 
     <!-- REFILL HISTORY TABLE & EXPENSE ANALYTICS -->
-    <section class="glass-panel" style="margin-bottom: 32px;">
-      <div class="card-header">
+    <section class="glass-panel history-section">
+      <div class="card-header history-header">
         <div class="card-title">
-          <span>📜</span> Cylinder Refill History &amp; Usage Logs
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Cylinder Refill History &amp; Usage Logs</span>
         </div>
-        <div style="display: flex; gap: 24px; font-size: 13px;">
-          <div>Total Refills: <strong id="metricTotalRefills" style="color: var(--text-primary);">6</strong></div>
-          <div>Total Spent: <strong id="metricTotalSpent" style="color: var(--accent-emerald);">₹5,135</strong></div>
-          <div>Avg Lifespan: <strong id="metricAvgCycle" style="color: #38bdf8;">34.0 Days</strong></div>
-          <div>Avg Burn: <strong id="metricAvgBurn" style="color: #ff7700;">0.418 kg/d</strong></div>
+        <div class="history-kpi-strip">
+          <div class="history-kpi-chip">Total Refills: <strong id="metricTotalRefills" class="tabular-nums">6</strong></div>
+          <div class="history-kpi-chip">Total Spent: <strong id="metricTotalSpent" class="kpi-emerald tabular-nums">₹5,135</strong></div>
+          <div class="history-kpi-chip">Avg Lifespan: <strong id="metricAvgCycle" class="tabular-nums">34.0 Days</strong></div>
+          <div class="history-kpi-chip">Avg Burn: <strong id="metricAvgBurn" class="kpi-accent tabular-nums">0.418 kg/d</strong></div>
         </div>
       </div>
       <div class="card-body">
@@ -555,9 +588,9 @@
                 <th>Booking Date</th>
                 <th>Delivery Date</th>
                 <th>LPG Agency</th>
-                <th>Amount</th>
-                <th>Days Lasted</th>
-                <th>Avg Daily Burn</th>
+                <th class="num-col">Amount</th>
+                <th class="num-col">Days Lasted</th>
+                <th class="num-col">Avg Daily Burn</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -570,9 +603,9 @@
     </section>
 
     <!-- FOOTER -->
-    <footer style="text-align: center; font-size: 13px; color: var(--text-muted); padding: 16px 0;">
+    <footer class="app-footer">
       <div>SmartLPG • Intelligent LPG Refill Prediction and Booking System</div>
-      <div style="font-size: 12px; margin-top: 4px;">
+      <div class="app-footer-sub">
         Designed &amp; Developed for Societal Based Mini Project (24CSE57) • Guide: Prof. Ashwini G B
       </div>
     </footer>
@@ -583,24 +616,23 @@
   <div class="modal-backdrop" id="bookingModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title">⚡ Instant LPG Refill Booking</div>
-        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+        <div class="modal-title">Instant LPG Refill Booking</div>
+        <button type="button" class="action-btn-circle close-modal-btn modal-close-icon" aria-label="Close">✕</button>
       </div>
       <form id="bookingForm">
         <div class="modal-body">
-          <!-- 25-Day Regulatory Lock Notice in Booking Modal -->
           <div id="bookingModalLockNotice" class="booking-lock-banner" style="display: none; margin-bottom: 16px; margin-top: 0;">
             <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <span>🔒</span> Refill Booking Locked (25-Day Regulatory Rule)
+              <span>Refill Booking Locked (25-Day Regulatory Rule)</span>
             </div>
             <div style="font-size: 12.5px;">
               Under Indian MoPNG directives, a cylinder refill can only be booked after 25 days from the previous booking.
-              Next eligible date: <strong id="modalLockEligibleDate" style="color: #ffffff;">20 Dec 2026</strong> (<span id="modalLockDaysLeft">18</span> days left).
+              Next eligible date: <strong id="modalLockEligibleDate" class="tabular-nums">20 Dec 2026</strong> (<span id="modalLockDaysLeft" class="tabular-nums">18</span> days left).
             </div>
           </div>
 
           <div class="form-field">
-            <label>Authorized LPG Provider</label>
+            <label for="bookProviderSelect">Authorized LPG Provider</label>
             <select class="form-select" id="bookProviderSelect">
               <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
               <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
@@ -609,8 +641,8 @@
           </div>
 
           <div class="form-field">
-            <label>Consumer Number</label>
-            <input type="text" class="form-input" id="bookConsumerInput" value="IND-7492810" readonly>
+            <label for="bookConsumerInput">Consumer Number</label>
+            <input type="text" class="form-input tabular-nums" id="bookConsumerInput" value="IND-7492810" readonly>
           </div>
 
           <div class="form-field">
@@ -619,7 +651,7 @@
           </div>
 
           <div class="form-field">
-            <label>Payment Method</label>
+            <label for="bookPaymentSelect">Payment Method</label>
             <select class="form-select" id="bookPaymentSelect">
               <option value="UPI (Google Pay / PhonePe)">UPI (Google Pay / PhonePe / Paytm)</option>
               <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
@@ -627,24 +659,24 @@
             </select>
           </div>
 
-          <div style="background: rgba(255, 119, 0, 0.08); border: 1px solid rgba(255, 119, 0, 0.25); border-radius: var(--radius-md); padding: 14px; margin-top: 14px; font-size: 13px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>Subsidized Refill Rate:</span>
-              <strong>₹858.00</strong>
+          <div class="booking-summary-box">
+            <div class="booking-summary-row">
+              <span>Subsidized Refill Rate</span>
+              <strong class="tabular-nums">₹858.00</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>Estimated Delivery Window:</span>
-              <strong style="color: #38bdf8;">2–3 Business Days</strong>
+            <div class="booking-summary-row">
+              <span>Estimated Delivery Window</span>
+              <strong>2–3 Business Days</strong>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Delivery Verification:</span>
-              <strong style="color: var(--accent-emerald);">Secure OTP at Doorstep</strong>
+            <div class="booking-summary-row">
+              <span>Delivery Verification</span>
+              <strong class="kpi-emerald">Secure OTP at Doorstep</strong>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
-          <button type="submit" class="btn-primary" id="confirmBookingBtn" style="width: auto; padding: 10px 24px;">Confirm &amp; Book Refill</button>
+          <button type="submit" class="btn-primary modal-submit-btn" id="confirmBookingBtn">Confirm &amp; Book Refill</button>
         </div>
       </form>
     </div>
@@ -654,49 +686,48 @@
   <div class="modal-backdrop" id="profileModal">
     <div class="modal-dialog modal-lg">
       <div class="modal-header">
-        <div class="modal-title">👤 Registered User &amp; Gas Provider Profile</div>
-        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+        <div class="modal-title">Registered User &amp; Gas Provider Profile</div>
+        <button type="button" class="action-btn-circle close-modal-btn modal-close-icon" aria-label="Close">✕</button>
       </div>
       <form id="profileForm">
-        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
-          <!-- Registered User Summary Card -->
+        <div class="modal-body modal-scroll-body">
           <div class="profile-summary-header">
-            <div class="profile-avatar-circle">👤</div>
-            <div style="flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h3 id="profileSummaryName" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Mohammed Huzaifa Khan</h3>
-                <span class="badge-status delivered" style="font-size: 11px;">✓ Registered Active</span>
+            <div class="profile-avatar-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="profile-summary-meta">
+              <div class="profile-summary-top">
+                <h3 id="profileSummaryName" class="profile-summary-name">Mohammed Huzaifa Khan</h3>
+                <span class="badge-status delivered">Registered Active</span>
               </div>
-              <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 3px;">
-                Primary Mobile: <strong id="profileSummaryPhone" style="color: var(--accent-cyan);">+91 98765 43210</strong> &bull; Consumer ID: <strong id="profileSummaryConsumer" style="color: #ff7700;">IND-7492810</strong>
+              <div class="profile-summary-sub tabular-nums">
+                Primary Mobile: <strong id="profileSummaryPhone">+91 98765 43210</strong> &bull; Consumer ID: <strong id="profileSummaryConsumer" class="kpi-accent">IND-7492810</strong>
               </div>
             </div>
           </div>
 
-          <!-- Section 1: Registered User Details -->
           <div class="form-section-header">
-            <span class="form-section-icon">📋</span>
             <span class="form-section-title">Registered User Information</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-grid-2">
             <div class="form-field">
-              <label>Full Name (Registered Consumer)</label>
+              <label for="profileFullName">Full Name (Registered Consumer)</label>
               <input type="text" class="form-input" id="profileFullName" placeholder="e.g. Mohammed Huzaifa Khan" required>
             </div>
             <div class="form-field">
-              <label>Registered Mobile Number</label>
-              <input type="tel" class="form-input" id="profileMobile" placeholder="+91 98765 43210" required>
+              <label for="profileMobile">Registered Mobile Number</label>
+              <input type="tel" class="form-input tabular-nums" id="profileMobile" placeholder="+91 98765 43210" required>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-grid-2">
             <div class="form-field">
-              <label>Registered Email ID</label>
+              <label for="profileEmail">Registered Email ID</label>
               <input type="email" class="form-input" id="profileEmail" placeholder="consumer@example.com" required>
             </div>
             <div class="form-field">
-              <label>Registered Connection Type</label>
+              <label for="profileConnectionType">Registered Connection Type</label>
               <select class="form-select" id="profileConnectionType">
                 <option value="14.2 kg Subsidized Domestic (Single Cylinder)">14.2 kg Subsidized Domestic (Single Cylinder)</option>
                 <option value="14.2 kg Double Cylinder Connection (DBC)">14.2 kg Double Cylinder Connection (DBC)</option>
@@ -707,19 +738,17 @@
           </div>
 
           <div class="form-field">
-            <label>Installation &amp; Delivery Address</label>
+            <label for="profileAddress">Installation &amp; Delivery Address</label>
             <input type="text" class="form-input" id="profileAddress" placeholder="Flat / House No., Street, City, Pincode" required>
           </div>
 
-          <!-- Section 2: Registered Gas Provider Details -->
-          <div class="form-section-header" style="margin-top: 24px;">
-            <span class="form-section-icon">⛽</span>
+          <div class="form-section-header" style="margin-top: 22px;">
             <span class="form-section-title">Registered Gas Provider Details</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-grid-2">
             <div class="form-field">
-              <label>Authorized LPG Company / Provider</label>
+              <label for="profileProvider">Authorized LPG Company / Provider</label>
               <select class="form-select" id="profileProvider">
                 <option value="Indane Gas (IOCL)">Indane Gas (IOCL)</option>
                 <option value="Bharat Gas (BPCL)">Bharat Gas (BPCL)</option>
@@ -727,42 +756,41 @@
               </select>
             </div>
             <div class="form-field">
-              <label>LPG Consumer Number / SV No.</label>
-              <input type="text" class="form-input" id="profileConsumerNo" placeholder="e.g. IND-7492810" required>
+              <label for="profileConsumerNo">LPG Consumer Number / SV No.</label>
+              <input type="text" class="form-input tabular-nums" id="profileConsumerNo" placeholder="e.g. IND-7492810" required>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-grid-2">
             <div class="form-field">
-              <label>Distributor Agency Name</label>
+              <label for="profileDistributor">Distributor Agency Name</label>
               <input type="text" class="form-input" id="profileDistributor" placeholder="e.g. Shanthi Indane Gas Services" required>
             </div>
             <div class="form-field">
-              <label>Agency Contact / Helpline Phone</label>
-              <input type="tel" class="form-input" id="profileDistributorPhone" placeholder="e.g. +91 80 2520 1199">
+              <label for="profileDistributorPhone">Agency Contact / Helpline Phone</label>
+              <input type="tel" class="form-input tabular-nums" id="profileDistributorPhone" placeholder="e.g. +91 80 2520 1199">
             </div>
           </div>
 
           <div class="form-field">
-            <label>Agency Refill Delivery Lead Time (Days)</label>
-            <input type="number" class="form-input" id="profileLeadTime" min="1" max="7" value="3" required>
+            <label for="profileLeadTime">Agency Refill Delivery Lead Time (Days)</label>
+            <input type="number" class="form-input tabular-nums" id="profileLeadTime" min="1" max="7" value="3" required>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
-          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Save Profile Details</button>
+          <button type="submit" class="btn-primary modal-submit-btn">Save Profile Details</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 5: 5-STEP DETAILS WIZARD (MULTI-FACTOR LPG CONSUMPTION MODELING) -->
+  <!-- MODAL 5: 5-STEP DETAILS WIZARD -->
   <div class="modal-backdrop" id="familyModal">
     <div class="modal-dialog wizard-modal-dialog">
-      <!-- Gradient Wizard Header -->
       <div class="wizard-header">
         <div class="wizard-top-bar">
-          <span class="wizard-step-badge">✨ Step <span id="wizardStepNum">1</span> of 5</span>
+          <span class="wizard-step-badge tabular-nums">Step <span id="wizardStepNum">1</span> of 5</span>
           <button type="button" class="wizard-cancel-btn close-modal-btn">Cancel</button>
         </div>
         <h2 class="wizard-title" id="wizardStepTitle">Cylinder &amp; Refill Details</h2>
@@ -777,7 +805,7 @@
 
           <!-- STEP 1: Cylinder & Refill Details -->
           <div class="wizard-step-pane" id="wizardStepPane1">
-            <label class="wizard-section-lbl">Gas Cylinder Capacity (Kg)</label>
+            <label class="wizard-section-lbl">Gas Cylinder Capacity (kg)</label>
             <div class="capacity-pill-grid" id="capacityPillGroup">
               <button type="button" class="cap-pill" data-cap="3.0">3 kg</button>
               <button type="button" class="cap-pill" data-cap="5.0">5 kg</button>
@@ -790,31 +818,27 @@
             </div>
             <input type="hidden" id="wizCylinderCapacity" value="14.2">
 
-            <div style="margin-bottom: 20px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer;">
-                <input type="checkbox" id="wizCustomCapCheck" style="accent-color: #2563eb;">
+            <div class="wiz-custom-cap-wrap">
+              <label class="wiz-checkbox-inline">
+                <input type="checkbox" id="wizCustomCapCheck">
                 <span>Other custom cylinder size</span>
               </label>
               <div id="wizCustomCapBox" style="display: none; margin-top: 8px;">
-                <input type="number" step="0.1" class="form-input" id="wizCustomCapInput" placeholder="Enter custom capacity in kg (e.g. 10.5)">
+                <input type="number" step="0.1" class="form-input tabular-nums" id="wizCustomCapInput" placeholder="Enter custom capacity in kg (e.g. 10.5)">
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-grid-2">
               <div class="form-field">
-                <label style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                  <span>📅</span> Date of Last Refill
-                </label>
-                <input type="date" class="form-input" id="wizLastRefillDate" value="2026-11-22" required>
-                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">When did you last refill or buy this cylinder?</span>
+                <label for="wizLastRefillDate">Date of Last Refill</label>
+                <input type="date" class="form-input tabular-nums" id="wizLastRefillDate" value="2026-11-22" required>
+                <span class="field-hint">When did you last refill or buy this cylinder?</span>
               </div>
 
               <div class="form-field">
-                <label style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
-                  <span style="color: #10b981;">₹</span> Current Refill Price (₹)
-                </label>
-                <input type="number" step="0.5" class="form-input" id="wizRefillPrice" value="858.00" required>
-                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Total cost paid for the full cylinder refill.</span>
+                <label for="wizRefillPrice">Current Refill Price (₹)</label>
+                <input type="number" step="0.5" class="form-input tabular-nums" id="wizRefillPrice" value="858.00" required>
+                <span class="field-hint">Total cost paid for the full cylinder refill.</span>
               </div>
             </div>
           </div>
@@ -846,22 +870,22 @@
             </div>
             <input type="hidden" id="wizClassification" value="Family Household">
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <div class="form-grid-2" style="margin-top: 16px;">
               <div class="stepper-counter-card">
-                <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Number of Adults</label>
+                <label class="stepper-lbl">Number of Adults</label>
                 <div class="stepper-btn-group">
                   <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('adults', -1)">−</button>
-                  <span class="counter-val-display" id="wizAdultsCountVal">2</span>
+                  <span class="counter-val-display tabular-nums" id="wizAdultsCountVal">2</span>
                   <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('adults', 1)">+</button>
                 </div>
                 <input type="hidden" id="wizAdultsCount" value="2">
               </div>
 
               <div class="stepper-counter-card">
-                <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Number of Children</label>
+                <label class="stepper-lbl">Number of Children</label>
                 <div class="stepper-btn-group">
                   <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('children', -1)">−</button>
-                  <span class="counter-val-display" id="wizChildrenCountVal">2</span>
+                  <span class="counter-val-display tabular-nums" id="wizChildrenCountVal">2</span>
                   <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('children', 1)">+</button>
                 </div>
                 <input type="hidden" id="wizChildrenCount" value="2">
@@ -871,9 +895,9 @@
 
           <!-- STEP 3: Cooking Habits & Food Types -->
           <div class="wizard-step-pane" id="wizardStepPane3" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+            <div class="wiz-select-grid-3">
               <div class="form-field">
-                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">MEALS COOKED / DAY</label>
+                <label for="wizMealsPerDay" class="wiz-upper-lbl">Meals Cooked / Day</label>
                 <select class="form-select" id="wizMealsPerDay">
                   <option value="1">1 Meal / day</option>
                   <option value="2">2 Meals / day</option>
@@ -884,7 +908,7 @@
               </div>
 
               <div class="form-field">
-                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">COOKING DAYS / WEEK</label>
+                <label for="wizCookingDays" class="wiz-upper-lbl">Cooking Days / Week</label>
                 <select class="form-select" id="wizCookingDays">
                   <option value="7" selected>7 Days / week (Everyday)</option>
                   <option value="6">6 Days / week</option>
@@ -895,7 +919,7 @@
               </div>
 
               <div class="form-field">
-                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">AVG TIME / MEAL</label>
+                <label for="wizAvgTimeMeal" class="wiz-upper-lbl">Avg Time / Meal</label>
                 <select class="form-select" id="wizAvgTimeMeal">
                   <option value="15">15 Minutes (Quick)</option>
                   <option value="20" selected>20 Minutes (Quick)</option>
@@ -907,10 +931,10 @@
             </div>
 
             <label class="wizard-section-lbl">Cooking Flame Intensity</label>
-            <div class="capacity-pill-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px;" id="wizFlameGroup">
-              <button type="button" class="cap-pill" data-flame="Light Flame">🔥 Light Flame<br><span style="font-size: 10px; opacity: 0.8;">Low heat, quick boils</span></button>
-              <button type="button" class="cap-pill active" data-flame="Medium Flame">🔥🔥 Medium Flame<br><span style="font-size: 10px; opacity: 0.8;">Standard heat burners</span></button>
-              <button type="button" class="cap-pill" data-flame="Heavy Flame">🔥🔥🔥 Heavy Flame<br><span style="font-size: 10px; opacity: 0.8;">High blast burners</span></button>
+            <div class="capacity-pill-grid wiz-flame-grid" id="wizFlameGroup">
+              <button type="button" class="cap-pill" data-flame="Light Flame">Light Flame<span class="flame-sub">Low heat, quick boils</span></button>
+              <button type="button" class="cap-pill active" data-flame="Medium Flame">Medium Flame<span class="flame-sub">Standard heat burners</span></button>
+              <button type="button" class="cap-pill" data-flame="Heavy Flame">Heavy Flame<span class="flame-sub">High blast burners</span></button>
             </div>
             <input type="hidden" id="wizFlameIntensity" value="Medium Flame">
 
@@ -919,72 +943,72 @@
               <label class="food-check-card checked">
                 <input type="checkbox" value="Rice" checked>
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Rice</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Standard boiling &amp; steaming</div>
+                  <div class="food-title">Rice</div>
+                  <div class="food-sub">Standard boiling &amp; steaming</div>
                 </div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Beans">
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Beans / Dal</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">High gas consumption, long boiling</div>
+                  <div class="food-title">Beans / Dal</div>
+                  <div class="food-sub">High gas consumption, long boiling</div>
                 </div>
               </label>
 
               <label class="food-check-card checked">
                 <input type="checkbox" value="Soup" checked>
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Soup / Sambar</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Medium simmer &amp; boiling</div>
+                  <div class="food-title">Soup / Sambar</div>
+                  <div class="food-sub">Medium simmer &amp; boiling</div>
                 </div>
               </label>
 
               <label class="food-check-card checked">
                 <input type="checkbox" value="Stew" checked>
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Stew / Curry</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Slow simmering &amp; frying base</div>
+                  <div class="food-title">Stew / Curry</div>
+                  <div class="food-sub">Slow simmering &amp; frying base</div>
                 </div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Porridge">
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Porridge / Roti</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Boiling &amp; baking</div>
+                  <div class="food-title">Porridge / Roti</div>
+                  <div class="food-sub">Boiling &amp; baking</div>
                 </div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Frying">
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Frying (Fish, Snacks)</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Quick high heat burner</div>
+                  <div class="food-title">Frying (Fish, Snacks)</div>
+                  <div class="food-sub">Quick high heat burner</div>
                 </div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Oven Baking">
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Oven / Tandoor Baking</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Gas oven or heavy baking</div>
+                  <div class="food-title">Oven / Tandoor Baking</div>
+                  <div class="food-sub">Gas oven or heavy baking</div>
                 </div>
               </label>
 
               <label class="food-check-card checked">
                 <input type="checkbox" value="Water & Egg Boiling" checked>
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Water &amp; Tea Boiling</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Frequent water boiling</div>
+                  <div class="food-title">Water &amp; Tea Boiling</div>
+                  <div class="food-sub">Frequent water boiling</div>
                 </div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Long Simmer Meals">
                 <div>
-                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Long Simmer Meals</div>
-                  <div style="font-size: 11px; color: var(--text-muted);">Extends 1+ hours continuous burner</div>
+                  <div class="food-title">Long Simmer Meals</div>
+                  <div class="food-sub">Extends 1+ hours continuous burner</div>
                 </div>
               </label>
             </div>
@@ -993,37 +1017,37 @@
           <!-- STEP 4: Extra Gas Appliances & Usages -->
           <div class="wizard-step-pane" id="wizardStepPane4" style="display: none;">
             <label class="wizard-section-lbl">Do you use gas for any of these extra activities?</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;" id="wizAppliancesGrid">
+            <div class="form-grid-2" style="gap: 10px; margin-bottom: 20px;" id="wizAppliancesGrid">
               <label class="food-check-card">
                 <input type="checkbox" value="Bathing & Shower Water Heating">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Bathing &amp; Shower Water Heating</div>
+                <div class="food-title">Bathing &amp; Shower Water Heating</div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Regular Cake/Bread Baking">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Regular Cake/Bread Baking</div>
+                <div class="food-title">Regular Cake/Bread Baking</div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Bulk Commercial Frying">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Bulk Commercial Frying</div>
+                <div class="food-title">Bulk Commercial Frying</div>
               </label>
 
               <label class="food-check-card">
                 <input type="checkbox" value="Commercial Catering / Restaurant Use">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Commercial Catering / Restaurant Use</div>
+                <div class="food-title">Commercial Catering / Restaurant Use</div>
               </label>
 
               <label class="food-check-card" style="grid-column: span 2;">
                 <input type="checkbox" value="Outdoor BBQ / Event Cooking">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Outdoor BBQ / Event Cooking</div>
+                <div class="food-title">Outdoor BBQ / Event Cooking</div>
               </label>
             </div>
 
             <div class="stepper-counter-card">
-              <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Average Weekly Extra Usage Hours (If any)</label>
-              <input type="number" step="0.5" class="form-input" id="wizExtraHours" placeholder="e.g. 4" value="0" style="margin-top: 8px;">
-              <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Estimated total hours gas is used per week for non-cooking appliances (water heaters, gas ovens, outdoor broilers).</span>
+              <label for="wizExtraHours" class="stepper-lbl">Average Weekly Extra Usage Hours (If any)</label>
+              <input type="number" step="0.5" class="form-input tabular-nums" id="wizExtraHours" placeholder="e.g. 4" value="0" style="margin-top: 8px;">
+              <span class="field-hint">Estimated total hours gas is used per week for non-cooking appliances (water heaters, gas ovens, outdoor broilers).</span>
             </div>
           </div>
 
@@ -1032,50 +1056,45 @@
             <label class="toggle-card-large checked">
               <input type="checkbox" id="wizUsePressureCooker" checked>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Use Pressure Cooker?</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Saves up to 25% fuel on beans &amp; tough grains.</div>
+                <div class="toggle-card-title">Use Pressure Cooker?</div>
+                <div class="toggle-card-sub">Saves up to 25% fuel on beans &amp; tough grains.</div>
               </div>
             </label>
 
             <label class="toggle-card-large checked">
               <input type="checkbox" id="wizUseSavingLids" checked>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Use Energy-Saving Lids &amp; Pans?</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Traps heat effectively, cutting cooking time.</div>
+                <div class="toggle-card-title">Use Energy-Saving Lids &amp; Pans?</div>
+                <div class="toggle-card-sub">Traps heat effectively, cutting cooking time.</div>
               </div>
             </label>
 
             <label class="toggle-card-large checked">
               <input type="checkbox" id="wizCookInBatches" checked>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Cook in Batches / Bulk Prep?</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Reduces preheating gas loss across separate sessions.</div>
+                <div class="toggle-card-title">Cook in Batches / Bulk Prep?</div>
+                <div class="toggle-card-sub">Reduces preheating gas loss across separate sessions.</div>
               </div>
             </label>
 
             <label class="toggle-card-large">
               <input type="checkbox" id="wizReheatOnStove">
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Reheat Food Often on Stove?</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Adds ~11% extra burner load daily.</div>
+                <div class="toggle-card-title">Reheat Food Often on Stove?</div>
+                <div class="toggle-card-sub">Adds ~11% extra burner load daily.</div>
               </div>
             </label>
 
-            <!-- AI Multi-Factor Estimation Ready Notice -->
-            <div style="display: flex; align-items: flex-start; gap: 12px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 12px; padding: 14px; margin-top: 14px;">
-              <span style="font-size: 20px;">🛡️</span>
+            <div class="wiz-ready-notice">
               <div>
-                <strong style="color: #38bdf8; font-size: 13.5px;">AI Multi-Factor Estimation Ready:</strong>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
-                  Our machine-learning algorithm calculates your gas consumption rate by integrating all 5 steps into a weighted regression scoring model.
-                </p>
+                <strong>AI Multi-Factor Estimation Ready:</strong>
+                <p>Our machine-learning algorithm calculates your gas consumption rate by integrating all 5 steps into a weighted regression scoring model.</p>
               </div>
             </div>
           </div>
 
         </div>
 
-        <!-- Wizard Navigation Footer -->
         <div class="wizard-footer">
           <button type="button" class="wizard-back-btn" id="wizBackBtn" disabled>
             &lt; Back
@@ -1092,10 +1111,10 @@
   <div class="modal-backdrop" id="alertsModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title">🔔 Alerts &amp; Notification History</div>
-        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+        <div class="modal-title">Alerts &amp; Notification History</div>
+        <button type="button" class="action-btn-circle close-modal-btn modal-close-icon" aria-label="Close">✕</button>
       </div>
-      <div class="modal-body" style="padding: 0; max-height: 400px; overflow-y: auto;" id="alertsListContainer">
+      <div class="modal-body alerts-modal-body" id="alertsListContainer">
         <!-- Dynamically rendered -->
       </div>
       <div class="modal-footer">
@@ -1108,86 +1127,81 @@
   <div class="modal-backdrop" id="auditReportModal">
     <div class="modal-dialog report-modal-dialog">
       <div class="modal-header">
-        <div class="modal-title">📄 Official LPG Refill &amp; Telemetry Audit Report</div>
-        <div style="display: flex; gap: 8px;">
-          <button type="button" class="btn-primary" style="padding: 6px 14px; font-size: 13px;" onclick="window.print()">🖨️ Print / Save PDF</button>
-          <button type="button" class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+        <div class="modal-title">Official LPG Refill &amp; Telemetry Audit Report</div>
+        <div class="report-header-actions">
+          <button type="button" class="btn-primary report-print-btn" onclick="window.print()">Print / Save PDF</button>
+          <button type="button" class="action-btn-circle close-modal-btn modal-close-icon" aria-label="Close">✕</button>
         </div>
       </div>
-      <div class="modal-body" style="padding: 16px; overflow-y: auto;">
+      <div class="modal-body modal-scroll-body" style="padding: 16px;">
         <div class="report-printable-area" id="reportPrintableArea">
-          <!-- Report Header -->
           <div class="report-header-banner">
             <div>
-              <div style="font-size: 20px; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--flame-start);">SmartLPG Official Audit Report</div>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Societal Based Mini Project (Course Code: 24CSE57) • Semester V</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">Department of Computer Science &amp; Engineering</div>
-              <div style="font-size: 12px; margin-top: 4px;"><strong>Guide:</strong> Prof. Ashwini G B &nbsp;|&nbsp; <strong>Date:</strong> <span id="reportAuditDate">2026-10-26</span></div>
+              <div class="report-brand-title">SmartLPG Official Audit Report</div>
+              <div class="report-meta-line">Societal Based Mini Project (Course Code: 24CSE57) • Semester V</div>
+              <div class="report-meta-line">Department of Computer Science &amp; Engineering</div>
+              <div class="report-meta-line" style="margin-top: 4px;"><strong>Guide:</strong> Prof. Ashwini G B &nbsp;|&nbsp; <strong>Date:</strong> <span id="reportAuditDate" class="tabular-nums">2026-10-26</span></div>
             </div>
-            <div style="text-align: right; font-size: 12px;">
+            <div class="report-students-col">
               <div style="font-weight: 700;">Student USNs &amp; Names:</div>
               <div>Mohammed Huzaifa Khan (1NH24CS126)</div>
               <div>Mohammad Aftab Ahmed (1NH24CS125)</div>
-              <div style="margin-top: 6px; font-size: 11px; color: var(--accent-emerald);">● VERIFIED BY SMART-IOT TELEMETRY</div>
+              <div class="report-verified-tag">● VERIFIED BY SMART-IOT TELEMETRY</div>
             </div>
           </div>
 
-          <!-- Household & Distributor Identity -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; font-size: 12.5px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+          <div class="report-identity-box">
             <div>
               <div><strong>Primary Consumer:</strong> <span id="reportConsumerName">Mohammed Huzaifa Khan</span></div>
-              <div><strong>Consumer No:</strong> <span id="reportConsumerId">IND-7492810</span></div>
+              <div><strong>Consumer No:</strong> <span id="reportConsumerId" class="tabular-nums">IND-7492810</span></div>
               <div><strong>Address:</strong> <span id="reportAddress">Indiranagar, Bengaluru, KA 560038</span></div>
             </div>
             <div>
               <div><strong>LPG Provider:</strong> <span id="reportProvider">Indane Gas (IOCL)</span></div>
               <div><strong>Authorized Agency:</strong> <span id="reportDistributor">Shanthi Indane Gas Services</span></div>
-              <div><strong>Tariff Rate:</strong> ₹858.00 / 14.2 kg Subsidized Refill</div>
+              <div><strong>Tariff Rate:</strong> <span class="tabular-nums">₹858.00 / 14.2 kg</span> Subsidized Refill</div>
             </div>
           </div>
 
-          <!-- Key Performance Indicators Grid -->
           <div class="report-kpi-grid">
             <div class="report-kpi-box">
-              <div class="report-kpi-val" id="reportGrossWeight">17.75 kg</div>
+              <div class="report-kpi-val tabular-nums" id="reportGrossWeight">17.75 kg</div>
               <div class="report-kpi-lbl">Gross Package Weight</div>
             </div>
             <div class="report-kpi-box">
-              <div class="report-kpi-val" id="reportNetLpg" style="color: #ff7700;">2.45 kg</div>
+              <div class="report-kpi-val kpi-accent tabular-nums" id="reportNetLpg">2.45 kg</div>
               <div class="report-kpi-lbl">Current Net LPG</div>
             </div>
             <div class="report-kpi-box">
-              <div class="report-kpi-val" id="reportDaysRemaining" style="color: #38bdf8;">4.6 Days</div>
+              <div class="report-kpi-val tabular-nums" id="reportDaysRemaining">4.6 Days</div>
               <div class="report-kpi-lbl">Remaining Fuel Time</div>
             </div>
             <div class="report-kpi-box">
-              <div class="report-kpi-val" id="reportDailyBurn">0.42 kg/d</div>
+              <div class="report-kpi-val tabular-nums" id="reportDailyBurn">0.42 kg/d</div>
               <div class="report-kpi-lbl">Daily Burn Rate</div>
             </div>
           </div>
 
-          <!-- ML Prediction & Forecast Timeline -->
-          <div style="margin: 16px 0; padding: 14px; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; font-size: 13px;">
-            <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px;">🧠 Random Forest Model Depletion &amp; Refill Recommendations</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div>Predicted Exhaustion Date: <strong id="reportDepletionDate">27 Oct 2026</strong></div>
-              <div>Buffer Booking Window: <strong id="reportBookingDate" style="color: #fbbf24;">24 Oct 2026</strong></div>
+          <div class="report-forecast-box">
+            <div class="report-forecast-title">Random Forest Model Depletion &amp; Refill Recommendations</div>
+            <div class="report-forecast-grid">
+              <div>Predicted Exhaustion Date: <strong id="reportDepletionDate" class="tabular-nums">27 Oct 2026</strong></div>
+              <div>Buffer Booking Window: <strong id="reportBookingDate" class="kpi-amber tabular-nums">24 Oct 2026</strong></div>
               <div>Agency Lead Time: <strong>3 Days Delivery Buffer</strong></div>
-              <div>Model Confidence: <strong style="color: var(--accent-emerald);">97% Statistical High Confidence</strong></div>
+              <div>Model Confidence: <strong class="kpi-emerald">97% Statistical High Confidence</strong></div>
             </div>
           </div>
 
-          <!-- Refill Cycle History Table -->
-          <div style="font-weight: 700; margin-bottom: 6px; font-size: 13px;">Past Refill Lifespan &amp; Consumption Log:</div>
+          <div class="report-table-heading">Past Refill Lifespan &amp; Consumption Log</div>
           <table class="custom-table" style="font-size: 12px; margin-bottom: 16px;">
             <thead>
               <tr>
                 <th>Booking ID</th>
                 <th>Booking Date</th>
                 <th>Delivery Date</th>
-                <th>Amount</th>
-                <th>Days Lasted</th>
-                <th>Daily Avg</th>
+                <th class="num-col">Amount</th>
+                <th class="num-col">Days Lasted</th>
+                <th class="num-col">Daily Avg</th>
               </tr>
             </thead>
             <tbody id="reportHistoryTbody">
@@ -1195,16 +1209,15 @@
             </tbody>
           </table>
 
-          <!-- Architecture & Safety Verification Section -->
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 12px; font-size: 12px; color: var(--text-secondary);">
+          <div class="report-footer-line">
             <div>System: Data-Driven Machine Learning Architecture • Scikit-Learn Model • Cloud Analytics</div>
-            <div>Safety Anomaly Detector: <strong style="color: var(--accent-emerald);">NORMAL (No Gas Leaks)</strong></div>
+            <div>Safety Anomaly Detector: <strong class="kpi-emerald">NORMAL (No Gas Leaks)</strong></div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-secondary close-modal-btn">Close</button>
-        <button type="button" class="btn-primary" onclick="window.print()">Print Audit Report</button>
+        <button type="button" class="btn-primary modal-submit-btn" onclick="window.print()">Print Audit Report</button>
       </div>
     </div>
   </div>
@@ -1242,12 +1255,12 @@
           </div>
 
           <!-- Demo Quick Credentials Box -->
-          <div style="background: rgba(255, 119, 0, 0.08); border: 1px dashed rgba(255, 119, 0, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 14px; font-size: 11.5px; color: var(--text-secondary);">
-            <div style="font-weight: 700; color: #ff7700; margin-bottom: 4px;">⚡ Demo Quick-Fill Credentials:</div>
+          <div class="auth-demo-box">
+            <div class="auth-demo-title">Demo Quick-Fill Credentials</div>
             <div>Consumer: <code>IND-7492810</code> | Pass: <code>smartlpg123</code></div>
           </div>
 
-          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Sign In to Dashboard ➔</button>
+          <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 700;">Sign In to Dashboard</button>
         </div>
       </form>
 
@@ -1285,11 +1298,13 @@
       </form>
 
       <!-- Logged In User State Box -->
-      <div id="authLoggedInState" style="display: none; padding: 20px; text-align: center;">
-        <div style="font-size: 40px; margin-bottom: 8px;">👤</div>
-        <h3 id="loggedInUserName" style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">User Name</h3>
-        <p id="loggedInUserConsumer" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Consumer ID: IND-7492810</p>
-        <button type="button" class="btn-secondary" id="authLogoutBtn" style="width: 100%; padding: 10px; color: #f43f5e; border-color: rgba(244, 63, 94, 0.3);">Sign Out</button>
+      <div id="authLoggedInState" style="display: none; padding: 24px 20px; text-align: center;">
+        <div class="auth-logged-avatar">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 id="loggedInUserName" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">User Name</h3>
+        <p id="loggedInUserConsumer" class="tabular-nums" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Consumer ID: IND-7492810</p>
+        <button type="button" class="btn-secondary auth-logout-btn" id="authLogoutBtn">Sign Out</button>
       </div>
     </div>
   </div>
