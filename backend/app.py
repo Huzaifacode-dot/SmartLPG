@@ -25,12 +25,25 @@ CORS(app)
 # Ensure DB is initialized
 init_db()
 
-# ----------------- WEB PAGES -----------------
+# ----------------- WEB PAGES & STATIC ASSETS -----------------
 @app.route("/")
+@app.route("/index.html")
 @app.route("/api")
 @app.route("/api/index")
 def index():
     return render_template("index.html")
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    return send_from_directory(STATIC_DIR, filename)
+
+@app.route("/css/<path:filename>")
+def serve_css(filename):
+    return send_from_directory(os.path.join(STATIC_DIR, "css"), filename)
+
+@app.route("/js/<path:filename>")
+def serve_js(filename):
+    return send_from_directory(os.path.join(STATIC_DIR, "js"), filename)
 
 # ----------------- USER PROFILE APIs -----------------
 @app.route("/api/profile", methods=["GET"])
