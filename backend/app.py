@@ -12,7 +12,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 
 from backend.database import get_db_connection, init_db
-from backend.ml_model import predict_consumption, compute_refill_analytics
+from backend.ml_model import predict_consumption, predict_multi_factor_consumption, compute_refill_analytics
 from backend.iot_simulator import IoTSimulator
 
 # Base directories
@@ -50,7 +50,17 @@ def get_profile():
             "usage_purpose": "Household",
             "household_classification": "Family Household",
             "date_of_last_refill": "2026-10-12",
-            "current_refill_price": 858.00
+            "current_refill_price": 858.00,
+            "cooking_days_per_week": 7,
+            "avg_time_per_meal": "20 Minutes (Quick)",
+            "flame_intensity": "Medium Flame",
+            "frequently_cooked_foods": "Rice,Soup,Stew,Water & Tea Boiling",
+            "extra_appliances": "",
+            "extra_weekly_hours": 0.0,
+            "use_pressure_cooker": 1,
+            "use_saving_lids": 1,
+            "cook_in_batches": 1,
+            "reheat_on_stove": 0
         }
         for k, v in defaults.items():
             if k not in data or data[k] is None:
@@ -59,6 +69,7 @@ def get_profile():
     return jsonify({"error": "Profile not found"}), 404
 
 @app.route("/api/profile", methods=["PUT"])
+@app.route("/api/profile/details-update", methods=["POST", "PUT"])
 def update_profile():
     data = request.json or {}
     conn = get_db_connection()
@@ -79,17 +90,29 @@ def update_profile():
         "distributor_name", "distributor_phone", "connection_type",
         "family_size", "adults_count", "children_count", "cooking_meals_per_day",
         "daily_cooking_hours", "usage_purpose", "household_classification",
-        "cylinder_capacity", "date_of_last_refill", "current_refill_price", "lead_time_days"
+        "cylinder_capacity", "date_of_last_refill", "current_refill_price", "lead_time_days",
+        "cooking_days_per_week", "avg_time_per_meal", "flame_intensity",
+        "frequently_cooked_foods", "extra_appliances", "extra_weekly_hours",
+        "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"
     ]
     
+    # Calculate family size if adults/children passed
+    if "adults_count" in data or "children_count" in data:
+        ad = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
+        ch = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
+        data["family_size"] = ad + ch
+        
     update_fields = {}
     for field in allowed_fields:
         if field in data and field in existing_cols:
             val = data[field]
-            if field in ["family_size", "adults_count", "children_count", "cooking_meals_per_day", "lead_time_days"]:
+            if field in ["family_size", "adults_count", "children_count", "cooking_meals_per_day", "lead_time_days",
+                         "cooking_days_per_week", "use_pressure_cooker", "use_saving_lids", "cook_in_batches", "reheat_on_stove"]:
                 val = int(val)
-            elif field in ["daily_cooking_hours", "cylinder_capacity", "current_refill_price"]:
+            elif field in ["daily_cooking_hours", "cylinder_capacity", "current_refill_price", "extra_weekly_hours"]:
                 val = float(val)
+            elif isinstance(val, list):
+                val = ",".join(str(item) for item in val)
             update_fields[field] = val
 
     if update_fields:
@@ -97,20 +120,43 @@ def update_profile():
         params = list(update_fields.values()) + [user["id"]]
         cursor.execute(f"UPDATE user_profile SET {set_clause} WHERE id = ?", params)
     
-    # Recalculate burn rate with updated profile
-    f_size = int(data.get("family_size", user["family_size"]))
+    # Recalculate burn rate with all 5 Multi-Factor Steps
+    adults = int(data.get("adults_count", user["adults_count"] if "adults_count" in user.keys() else 2))
+    children = int(data.get("children_count", user["children_count"] if "children_count" in user.keys() else 2))
     meals = int(data.get("cooking_meals_per_day", user["cooking_meals_per_day"]))
-    hours = float(data.get("daily_cooking_hours", user["daily_cooking_hours"]))
+    days_week = int(data.get("cooking_days_per_week", user["cooking_days_per_week"] if "cooking_days_per_week" in user.keys() else 7))
+    avg_mins = data.get("avg_time_per_meal", user["avg_time_per_meal"] if "avg_time_per_meal" in user.keys() else "20 Minutes (Quick)")
+    flame = data.get("flame_intensity", user["flame_intensity"] if "flame_intensity" in user.keys() else "Medium Flame")
+    foods = data.get("frequently_cooked_foods", user["frequently_cooked_foods"] if "frequently_cooked_foods" in user.keys() else "Rice,Soup,Stew")
+    extra_apps = data.get("extra_appliances", user["extra_appliances"] if "extra_appliances" in user.keys() else "")
+    extra_hrs = float(data.get("extra_weekly_hours", user["extra_weekly_hours"] if "extra_weekly_hours" in user.keys() else 0.0))
+    p_cooker = bool(int(data.get("use_pressure_cooker", user["use_pressure_cooker"] if "use_pressure_cooker" in user.keys() else 1)))
+    lids = bool(int(data.get("use_saving_lids", user["use_saving_lids"] if "use_saving_lids" in user.keys() else 1)))
+    batches = bool(int(data.get("cook_in_batches", user["cook_in_batches"] if "cook_in_batches" in user.keys() else 1)))
+    reheat = bool(int(data.get("reheat_on_stove", user["reheat_on_stove"] if "reheat_on_stove" in user.keys() else 0)))
+    cap = float(data.get("cylinder_capacity", user["cylinder_capacity"] if "cylinder_capacity" in user.keys() else 14.2))
 
-    burn_rate = predict_consumption(
-        family_size=f_size,
+    burn_rate = predict_multi_factor_consumption(
+        adults_count=adults,
+        children_count=children,
         meals_per_day=meals,
-        daily_cooking_hours=hours
+        cooking_days_per_week=days_week,
+        avg_meal_minutes=avg_mins,
+        flame_intensity=flame,
+        foods_cooked=foods,
+        extra_appliances=extra_apps,
+        extra_weekly_hours=extra_hrs,
+        use_pressure_cooker=p_cooker,
+        use_saving_lids=lids,
+        cook_in_batches=batches,
+        reheat_on_stove=reheat,
+        cylinder_capacity=cap
     )
     
     # Update active cylinder burn rate and days remaining
     cursor.execute("SELECT * FROM cylinder_status ORDER BY id DESC LIMIT 1")
     cyl = cursor.fetchone()
+    days_rem = 0.0
     if cyl:
         days_rem = round(cyl["current_gas_weight"] / burn_rate, 1) if burn_rate > 0 else 0
         pred_empty = (datetime.now() + timedelta(days=days_rem)).strftime("%Y-%m-%d")
@@ -122,24 +168,21 @@ def update_profile():
         WHERE id = ?
         ''', (burn_rate, days_rem, pred_empty, cyl["id"]))
 
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Profile updated successfully", "new_burn_rate": burn_rate})
-    cyl = cursor.fetchone()
-    if cyl:
-        days_rem = round(cyl["current_gas_weight"] / burn_rate, 1) if burn_rate > 0 else 0
-        pred_empty = (datetime.now() + timedelta(days=days_rem)).strftime("%Y-%m-%d")
-        cursor.execute('''
-        UPDATE cylinder_status SET
-            burn_rate_kg_per_day = ?,
-            days_remaining = ?,
-            predicted_empty_date = ?
-        WHERE id = ?
-        ''', (burn_rate, days_rem, pred_empty, cyl["id"]))
+    cursor.execute('''
+    INSERT INTO alerts (title, message, alert_type, is_read)
+    VALUES ('Consumption Model Recalibrated', ?, 'info', 0)
+    ''', (f"Updated 5-step parameters. New burn rate: {burn_rate:.3f} kg/d, estimated remaining: ~{days_rem} days.",))
 
     conn.commit()
     conn.close()
-    return jsonify({"status": "success", "message": "Profile updated successfully", "new_burn_rate": burn_rate})
+    return jsonify({
+        "status": "success",
+        "message": "Details saved and ML prediction recalibrated!",
+        "new_burn_rate": burn_rate,
+        "burn_rate_kg": burn_rate,
+        "days_remaining": days_rem,
+        "estimated_days_remaining": days_rem
+    })
 
 @app.route("/api/family", methods=["GET"])
 def get_family():
@@ -260,6 +303,41 @@ def create_booking():
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # 25-Day Regulatory Lock Verification (MoPNG Inter-Booking Policy)
+    force = bool(data.get("force", False))
+    cursor.execute("SELECT * FROM bookings ORDER BY id DESC LIMIT 1")
+    last_booking = cursor.fetchone()
+    
+    if last_booking and not force:
+        # Check 1: Is previous order still active in transit?
+        if last_booking["tracking_step"] < 5 and last_booking["status"] != "DELIVERED":
+            conn.close()
+            return jsonify({
+                "status": "locked",
+                "error": f"Active Refill In Progress: Booking #{last_booking['booking_id']} is currently out for delivery (Step {last_booking['tracking_step']}/5). You cannot book another refill until this one is delivered.",
+                "booking_id": last_booking["booking_id"],
+                "tracking_step": last_booking["tracking_step"]
+            }), 400
+            
+        # Check 2: Has 25 days elapsed since last refill booking?
+        try:
+            last_date = datetime.strptime(last_booking["booking_date"], "%Y-%m-%d")
+            days_elapsed = (datetime.now() - last_date).days
+        except Exception:
+            days_elapsed = 30
+            
+        if days_elapsed < 25:
+            days_remaining = 25 - days_elapsed
+            eligible_date = (last_date + timedelta(days=25)).strftime("%d %b %Y")
+            conn.close()
+            return jsonify({
+                "status": "locked",
+                "error": f"Refill Booking Locked: Regulatory guidelines require a minimum 25-day interval between cylinder bookings. Next booking allowed in {days_remaining} day(s) on {eligible_date}.",
+                "days_elapsed": days_elapsed,
+                "days_remaining": days_remaining,
+                "eligible_date": eligible_date
+            }), 400
+
     cursor.execute("SELECT * FROM user_profile LIMIT 1")
     user = cursor.fetchone()
     
@@ -325,9 +403,64 @@ def get_active_booking():
     cursor.execute("SELECT * FROM bookings ORDER BY id DESC LIMIT 1")
     row = cursor.fetchone()
     conn.close()
+    
     if row:
-        return jsonify(dict(row))
-    return jsonify({"active_booking": None})
+        b = dict(row)
+        try:
+            last_date = datetime.strptime(b["booking_date"], "%Y-%m-%d")
+            days_elapsed = (datetime.now() - last_date).days
+        except Exception:
+            days_elapsed = 30
+            last_date = datetime.now() - timedelta(days=30)
+            
+        is_delivered = (b["tracking_step"] >= 5 or b["status"] == "DELIVERED")
+        can_book = (days_elapsed >= 25) and is_delivered
+        days_remaining = max(0, 25 - days_elapsed)
+        eligible_date = (last_date + timedelta(days=25)).strftime("%d %b %Y")
+        
+        lock_reason = None
+        if not is_delivered:
+            lock_reason = f"Booking #{b['booking_id']} is active and en route (Step {b['tracking_step']}/5)."
+        elif days_elapsed < 25:
+            lock_reason = f"Regulatory 25-day inter-booking interval active. Next eligible booking: {eligible_date} ({days_remaining} days left)."
+            
+        b["eligibility"] = {
+            "can_book": can_book,
+            "days_elapsed": days_elapsed,
+            "days_remaining": days_remaining,
+            "eligible_date": eligible_date,
+            "is_delivered": is_delivered,
+            "lock_reason": lock_reason
+        }
+        return jsonify(b)
+        
+    return jsonify({
+        "active_booking": None,
+        "eligibility": {
+            "can_book": True,
+            "days_elapsed": 30,
+            "days_remaining": 0,
+            "eligible_date": datetime.now().strftime("%d %b %Y"),
+            "lock_reason": None
+        }
+    })
+
+@app.route("/api/booking/fast-forward-25-days", methods=["POST"])
+def fast_forward_booking_demo():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    past_date = (datetime.now() - timedelta(days=26)).strftime("%Y-%m-%d")
+    cursor.execute('''
+    UPDATE bookings 
+    SET booking_date = ?, tracking_step = 5, status = 'DELIVERED'
+    WHERE id = (SELECT id FROM bookings ORDER BY id DESC LIMIT 1)
+    ''', (past_date,))
+    conn.commit()
+    conn.close()
+    return jsonify({
+        "success": True,
+        "message": "Demo: Simulated 26 days passed since last refill. 25-day lock is now lifted!"
+    })
 
 @app.route("/api/booking/advance-step/<booking_id>", methods=["POST"])
 def advance_tracking_step(booking_id):

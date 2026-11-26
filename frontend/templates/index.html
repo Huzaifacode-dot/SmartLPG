@@ -19,16 +19,31 @@
       <div class="brand-section">
         <div class="logo-flame">🔥</div>
         <div>
-          <h1 class="brand-title">SmartLPG</h1>
+          <h1 class="brand-title">
+            SmartLPG
+            <span class="project-tag" style="background: rgba(255, 119, 0, 0.15); color: #ff7700; border-color: rgba(255, 119, 0, 0.3); font-size: 10px; margin-left: 6px;">✨ AI Model</span>
+          </h1>
         </div>
       </div>
 
       <div class="header-actions">
-        <!-- Family Details Trigger -->
-        <button class="btn-secondary" id="openFamilyModalBtn" style="display: flex; align-items: center; gap: 8px;" title="Family Demographics, Cooking Pattern &amp; Classification">
-          <span>👨‍👩‍👧‍👦</span>
-          <span>Family Details</span>
+        <!-- Quick Indicators (Inspired by Landing Reference) -->
+        <div class="status-pill" style="font-size: 12px; gap: 6px;" title="Current Cylinder Level">
+          <span style="color: #10b981;">●</span> Gas Left: <strong id="navGasLeft" style="color: #ff7700;">17.3%</strong>
+        </div>
+        <div class="status-pill" style="font-size: 12px; font-weight: 700;">₹ INR</div>
+
+        <!-- 5-Step Details Wizard Trigger -->
+        <button class="btn-secondary" id="openFamilyModalBtn" style="display: flex; align-items: center; gap: 8px;" title="5-Step Multi-Factor LPG Details Wizard">
+          <span>📋</span>
+          <span>Details</span>
         </button>
+
+        <!-- Quick Dashboard Jump -->
+        <a href="#dashboardSection" class="btn-secondary" style="display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 13px;" title="Jump to Live Dashboard">
+          <span>📊</span>
+          <span>Dashboard</span>
+        </a>
 
         <!-- Audit Report Modal Trigger -->
         <button class="btn-secondary" id="openAuditReportBtn" style="display: flex; align-items: center; gap: 8px;" title="Print/Export LPG Consumption &amp; Refill Audit Report">
@@ -53,6 +68,52 @@
         </button>
       </div>
     </header>
+
+    <!-- LANDING HERO SECTION (AI Multi-Factor LPG Depletion Forecaster) -->
+    <section class="landing-hero-card" id="landingHeroSection">
+      <div class="landing-badge-pill">
+        <span>✨ Multi-Factor LPG Gas Consumption Modeling</span>
+      </div>
+
+      <h1 class="landing-hero-headline">
+        Know When Your Gas Will Finish<br>
+        <span class="headline-gradient">— Before It Does.</span>
+      </h1>
+
+      <p class="landing-hero-subtext">
+        Smart AI-powered prediction based on your cooking habits, household size, food intensity, and extra gas usage. 100% data-driven software with zero hardware required.
+      </p>
+
+      <div class="landing-cta-group">
+        <button type="button" class="btn-primary landing-cta-btn" id="heroStartPredictionBtn">
+          <span>🔥 Start Prediction</span>
+          <span style="font-size: 16px;">➔</span>
+        </button>
+        <a href="#dashboardSection" class="btn-secondary landing-cta-secondary" id="heroGoToDashboardBtn">
+          <span>📊 Open Live Dashboard</span>
+        </a>
+      </div>
+
+      <!-- 4 Value Proposition Pillars -->
+      <div class="landing-value-props">
+        <div class="value-prop-pill">
+          <span class="prop-icon">🟢</span>
+          <span>No Hardware Needed</span>
+        </div>
+        <div class="value-prop-pill">
+          <span class="prop-icon">🎯</span>
+          <span>Realistic Confidence Score</span>
+        </div>
+        <div class="value-prop-pill">
+          <span class="prop-icon">🔒</span>
+          <span>100% Private (No Login)</span>
+        </div>
+        <div class="value-prop-pill">
+          <span class="prop-icon">📄</span>
+          <span>PDF &amp; Audit Export</span>
+        </div>
+      </div>
+    </section>
 
     <!-- Emergency Gas Leak Alert Banner (Hidden by default, activated on leak detection) -->
     <aside class="emergency-leak-banner" id="emergencyLeakBanner">
@@ -258,6 +319,22 @@
               <button class="btn-secondary" id="resetTrackingBtn" style="padding: 10px 14px; font-weight: 600; white-space: nowrap;" title="Reset Tracking Demo back to Step 1">
                 🔄 Reset Demo
               </button>
+            </div>
+
+            <!-- 25-Day Regulatory Inter-Booking Lock Card -->
+            <div id="bookingLockNotice" class="booking-lock-banner" style="display: none;">
+              <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <span style="font-size: 16px;">🔒</span>
+                <div>
+                  <strong>Regulatory Inter-Booking Rule Active:</strong>
+                  <div>Refill cylinders can only be booked once every 25 days. Next eligible booking: <strong id="lockEligibleDate" style="color: #ffffff;">20 Dec 2026</strong> (<span id="lockDaysLeft">18</span> days remaining).</div>
+                </div>
+              </div>
+              <div style="margin-top: 8px; text-align: right;">
+                <button type="button" class="btn-secondary" id="fastForwardBookingBtn" style="padding: 4px 10px; font-size: 11px; font-weight: 600;" title="Simulates 26 days elapsed to test fresh booking">
+                  ⏩ Fast-Forward 25 Days (Demo)
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -493,6 +570,17 @@
       </div>
       <form id="bookingForm">
         <div class="modal-body">
+          <!-- 25-Day Regulatory Lock Notice in Booking Modal -->
+          <div id="bookingModalLockNotice" class="booking-lock-banner" style="display: none; margin-bottom: 16px; margin-top: 0;">
+            <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span>🔒</span> Refill Booking Locked (25-Day Regulatory Rule)
+            </div>
+            <div style="font-size: 12.5px;">
+              Under Indian MoPNG directives, a cylinder refill can only be booked after 25 days from the previous booking.
+              Next eligible date: <strong id="modalLockEligibleDate" style="color: #ffffff;">20 Dec 2026</strong> (<span id="modalLockDaysLeft">18</span> days left).
+            </div>
+          </div>
+
           <div class="form-field">
             <label>Authorized LPG Provider</label>
             <select class="form-select" id="bookProviderSelect">
@@ -538,7 +626,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
-          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Confirm &amp; Book Refill</button>
+          <button type="submit" class="btn-primary" id="confirmBookingBtn" style="width: auto; padding: 10px 24px;">Confirm &amp; Book Refill</button>
         </div>
       </form>
     </div>
@@ -650,140 +738,333 @@
     </div>
   </div>
 
-  <!-- MODAL 5: USER'S FAMILY & HOUSEHOLD CLASSIFICATION -->
+  <!-- MODAL 5: 5-STEP DETAILS WIZARD (MULTI-FACTOR LPG CONSUMPTION MODELING) -->
   <div class="modal-backdrop" id="familyModal">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-header">
-        <div class="modal-title">👨‍👩‍👧‍👦 User's Family &amp; Household Profile</div>
-        <button class="action-btn-circle close-modal-btn" style="width: 32px; height: 32px;">✕</button>
+    <div class="modal-dialog wizard-modal-dialog">
+      <!-- Gradient Wizard Header -->
+      <div class="wizard-header">
+        <div class="wizard-top-bar">
+          <span class="wizard-step-badge">✨ Step <span id="wizardStepNum">1</span> of 5</span>
+          <button type="button" class="wizard-cancel-btn close-modal-btn">Cancel</button>
+        </div>
+        <h2 class="wizard-title" id="wizardStepTitle">Cylinder &amp; Refill Details</h2>
+        <p class="wizard-subtitle" id="wizardStepSubtitle">Select cylinder capacity, refill cost, and date of last refill.</p>
+        <div class="wizard-progress-track">
+          <div class="wizard-progress-fill" id="wizardProgressFill" style="width: 20%;"></div>
+        </div>
       </div>
-      <form id="familyForm">
-        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
-          
-          <!-- SECTION 1: Household Classification -->
-          <div class="form-section-header">
-            <span class="form-section-icon">🏷️</span>
-            <span class="form-section-title">Household Classification</span>
-          </div>
-          <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 12px;">
-            Select your household or commercial category:
-          </p>
 
-          <input type="hidden" id="famHouseholdClassification" value="Family Household">
+      <form id="wizardDetailsForm">
+        <div class="wizard-body">
 
-          <div class="classification-grid" id="classificationGrid">
-            <!-- Option 1: Single Person -->
-            <div class="classification-card" data-classification="Single Person" data-purpose="Household" data-members="1" data-adults="1" data-children="0">
-              <div class="classification-icon">🧑</div>
-              <div class="classification-title">Single Person</div>
-              <div class="classification-desc">1 individual</div>
+          <!-- STEP 1: Cylinder & Refill Details -->
+          <div class="wizard-step-pane" id="wizardStepPane1">
+            <label class="wizard-section-lbl">Gas Cylinder Capacity (Kg)</label>
+            <div class="capacity-pill-grid" id="capacityPillGroup">
+              <button type="button" class="cap-pill" data-cap="3.0">3 kg</button>
+              <button type="button" class="cap-pill" data-cap="5.0">5 kg</button>
+              <button type="button" class="cap-pill" data-cap="6.0">6 kg</button>
+              <button type="button" class="cap-pill" data-cap="12.5">12.5 kg</button>
+              <button type="button" class="cap-pill active" data-cap="14.2">14.2 kg</button>
+              <button type="button" class="cap-pill" data-cap="19.0">19 kg</button>
+              <button type="button" class="cap-pill" data-cap="25.0">25 kg</button>
+              <button type="button" class="cap-pill" data-cap="50.0">50 kg</button>
+            </div>
+            <input type="hidden" id="wizCylinderCapacity" value="14.2">
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer;">
+                <input type="checkbox" id="wizCustomCapCheck" style="accent-color: #2563eb;">
+                <span>Other custom cylinder size</span>
+              </label>
+              <div id="wizCustomCapBox" style="display: none; margin-top: 8px;">
+                <input type="number" step="0.1" class="form-input" id="wizCustomCapInput" placeholder="Enter custom capacity in kg (e.g. 10.5)">
+              </div>
             </div>
 
-            <!-- Option 2: Family Household -->
-            <div class="classification-card active" data-classification="Family Household" data-purpose="Household" data-members="4" data-adults="2" data-children="2">
-              <div class="classification-icon">👨‍👩‍👧‍👦</div>
-              <div class="classification-title">Family Household</div>
-              <div class="classification-desc">Parents &amp; Kids</div>
-            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-field">
+                <label style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                  <span>📅</span> Date of Last Refill
+                </label>
+                <input type="date" class="form-input" id="wizLastRefillDate" value="2026-11-22" required>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">When did you last refill or buy this cylinder?</span>
+              </div>
 
-            <!-- Option 3: Shared Apartment -->
-            <div class="classification-card" data-classification="Shared Apartment" data-purpose="Household" data-members="3" data-adults="3" data-children="0">
-              <div class="classification-icon">🏢</div>
-              <div class="classification-title">Shared Apartment</div>
-              <div class="classification-desc">Flatmates</div>
-            </div>
-
-            <!-- Option 4: Restaurant / Eatery -->
-            <div class="classification-card" data-classification="Restaurant / Eatery" data-purpose="Commercial" data-capacity="19.0">
-              <div class="classification-icon">🍽️</div>
-              <div class="classification-title">Restaurant / Eatery</div>
-              <div class="classification-desc">Commercial scale</div>
-            </div>
-
-            <!-- Option 5: Small Business -->
-            <div class="classification-card" data-classification="Small Business" data-purpose="Commercial" data-capacity="19.0">
-              <div class="classification-icon">🏬</div>
-              <div class="classification-title">Small Business</div>
-              <div class="classification-desc">Office / Bakery</div>
+              <div class="form-field">
+                <label style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                  <span style="color: #10b981;">₹</span> Current Refill Price (₹)
+                </label>
+                <input type="number" step="0.5" class="form-input" id="wizRefillPrice" value="858.00" required>
+                <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Total cost paid for the full cylinder refill.</span>
+              </div>
             </div>
           </div>
 
-          <!-- SECTION 2: Commercial / Household Purpose Selector -->
-          <div class="form-section-header" style="margin-top: 24px;">
-            <span class="form-section-icon">🎯</span>
-            <span class="form-section-title">Gas Usage Purpose</span>
-          </div>
-          <div class="purpose-pill-group">
-            <button type="button" class="purpose-pill-btn active" id="purposeHouseholdBtn" data-purpose="Household">
-              🏠 Household Purpose
-            </button>
-            <button type="button" class="purpose-pill-btn" id="purposeCommercialBtn" data-purpose="Commercial">
-              🏢 Commercial Purpose
-            </button>
-          </div>
-          <input type="hidden" id="famUsagePurpose" value="Household">
+          <!-- STEP 2: Household Size & Composition -->
+          <div class="wizard-step-pane" id="wizardStepPane2" style="display: none;">
+            <label class="wizard-section-lbl">Household Classification</label>
+            <div class="classification-cards-row" id="wizClassificationGroup">
+              <div class="class-card-item" data-class="Single Person" data-adults="1" data-children="0">
+                <div class="class-card-title">Single Person</div>
+                <div class="class-card-subtitle">1 individual</div>
+              </div>
+              <div class="class-card-item active" data-class="Family Household" data-adults="2" data-children="2">
+                <div class="class-card-title">Family Household</div>
+                <div class="class-card-subtitle">Parents &amp; Kids</div>
+              </div>
+              <div class="class-card-item" data-class="Shared Apartment" data-adults="3" data-children="0">
+                <div class="class-card-title">Shared Apartment</div>
+                <div class="class-card-subtitle">Flatmates</div>
+              </div>
+              <div class="class-card-item" data-class="Restaurant / Eatery" data-adults="6" data-children="0">
+                <div class="class-card-title">Restaurant / Eatery</div>
+                <div class="class-card-subtitle">Commercial scale</div>
+              </div>
+              <div class="class-card-item" data-class="Small Business" data-adults="4" data-children="0">
+                <div class="class-card-title">Small Business</div>
+                <div class="class-card-subtitle">Office / Bakery</div>
+              </div>
+            </div>
+            <input type="hidden" id="wizClassification" value="Family Household">
 
-          <!-- SECTION 3: Demographics & Cooking Duration -->
-          <div class="form-section-header" style="margin-top: 24px;">
-            <span class="form-section-icon">👥</span>
-            <span class="form-section-title">Family Demographics &amp; Cooking Habits</span>
-          </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+              <div class="stepper-counter-card">
+                <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Number of Adults</label>
+                <div class="stepper-btn-group">
+                  <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('adults', -1)">−</button>
+                  <span class="counter-val-display" id="wizAdultsCountVal">2</span>
+                  <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('adults', 1)">+</button>
+                </div>
+                <input type="hidden" id="wizAdultsCount" value="2">
+              </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
-            <div class="form-field">
-              <label>People in Family (Total)</label>
-              <input type="number" class="form-input" id="famTotalMembers" min="1" max="30" value="4" required>
+              <div class="stepper-counter-card">
+                <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Number of Children</label>
+                <div class="stepper-btn-group">
+                  <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('children', -1)">−</button>
+                  <span class="counter-val-display" id="wizChildrenCountVal">2</span>
+                  <button type="button" class="counter-circle-btn" onclick="adjustWizCounter('children', 1)">+</button>
+                </div>
+                <input type="hidden" id="wizChildrenCount" value="2">
+              </div>
             </div>
-            <div class="form-field">
-              <label>Number of Adults</label>
-              <input type="number" class="form-input" id="famAdultsCount" min="1" max="25" value="2" required>
-            </div>
-            <div class="form-field">
-              <label>Number of Children</label>
-              <input type="number" class="form-input" id="famChildrenCount" min="0" max="25" value="2" required>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-            <div class="form-field">
-              <label>How Long They Cook (Hours / Day)</label>
-              <input type="number" step="0.1" class="form-input" id="famCookingHours" min="0.5" max="18.0" value="2.8" required>
-            </div>
-            <div class="form-field">
-              <label>Cooked Meals / Day</label>
-              <input type="number" class="form-input" id="famMealsPerDay" min="1" max="6" value="3" required>
-            </div>
-          </div>
-
-          <!-- SECTION 4: Cylinder Specification & Refill Pricing -->
-          <div class="form-section-header" style="margin-top: 24px;">
-            <span class="form-section-icon">⛽</span>
-            <span class="form-section-title">Cylinder Capacity, Pricing &amp; Last Refill Date</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
-            <div class="form-field">
-              <label>Gas Cylinder Capacity</label>
-              <select class="form-select" id="famCylinderCapacity">
-                <option value="14.2">14.2 kg Subsidized Domestic</option>
-                <option value="19.0">19.0 kg Commercial Cylinder</option>
-                <option value="5.0">5.0 kg Chhotu Domestic / Rural</option>
-              </select>
+          <!-- STEP 3: Cooking Habits & Food Types -->
+          <div class="wizard-step-pane" id="wizardStepPane3" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px;">
+              <div class="form-field">
+                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">MEALS COOKED / DAY</label>
+                <select class="form-select" id="wizMealsPerDay">
+                  <option value="1">1 Meal / day</option>
+                  <option value="2">2 Meals / day</option>
+                  <option value="3" selected>3 Meals / day</option>
+                  <option value="4">4 Meals / day</option>
+                  <option value="5">5+ Meals / day</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">COOKING DAYS / WEEK</label>
+                <select class="form-select" id="wizCookingDays">
+                  <option value="7" selected>7 Days / week (Everyday)</option>
+                  <option value="6">6 Days / week</option>
+                  <option value="5">5 Days / week</option>
+                  <option value="4">4 Days / week</option>
+                  <option value="3">3 Days / week</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">AVG TIME / MEAL</label>
+                <select class="form-select" id="wizAvgTimeMeal">
+                  <option value="15">15 Minutes (Quick)</option>
+                  <option value="20" selected>20 Minutes (Quick)</option>
+                  <option value="30">30 Minutes (Standard)</option>
+                  <option value="45">45 Minutes (Extended)</option>
+                  <option value="60">60+ Minutes (Heavy)</option>
+                </select>
+              </div>
             </div>
-            <div class="form-field">
-              <label>Date of Last Refill</label>
-              <input type="date" class="form-input" id="famLastRefillDate" value="2026-10-12" required>
+
+            <label class="wizard-section-lbl">Cooking Flame Intensity</label>
+            <div class="capacity-pill-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px;" id="wizFlameGroup">
+              <button type="button" class="cap-pill" data-flame="Light Flame">🔥 Light Flame<br><span style="font-size: 10px; opacity: 0.8;">Low heat, quick boils</span></button>
+              <button type="button" class="cap-pill active" data-flame="Medium Flame">🔥🔥 Medium Flame<br><span style="font-size: 10px; opacity: 0.8;">Standard heat burners</span></button>
+              <button type="button" class="cap-pill" data-flame="Heavy Flame">🔥🔥🔥 Heavy Flame<br><span style="font-size: 10px; opacity: 0.8;">High blast burners</span></button>
             </div>
-            <div class="form-field">
-              <label>Current Refill Price (₹)</label>
-              <input type="number" step="0.5" class="form-input" id="famRefillPrice" value="858.00" required>
+            <input type="hidden" id="wizFlameIntensity" value="Medium Flame">
+
+            <label class="wizard-section-lbl">Foods Frequently Cooked (Check all that apply)</label>
+            <div class="foods-checkbox-grid" id="wizFoodsGrid">
+              <label class="food-check-card checked">
+                <input type="checkbox" value="Rice" checked>
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Rice</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Standard boiling &amp; steaming</div>
+                </div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Beans">
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Beans / Dal</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">High gas consumption, long boiling</div>
+                </div>
+              </label>
+
+              <label class="food-check-card checked">
+                <input type="checkbox" value="Soup" checked>
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Soup / Sambar</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Medium simmer &amp; boiling</div>
+                </div>
+              </label>
+
+              <label class="food-check-card checked">
+                <input type="checkbox" value="Stew" checked>
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Stew / Curry</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Slow simmering &amp; frying base</div>
+                </div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Porridge">
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Porridge / Roti</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Boiling &amp; baking</div>
+                </div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Frying">
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Frying (Fish, Snacks)</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Quick high heat burner</div>
+                </div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Oven Baking">
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Oven / Tandoor Baking</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Gas oven or heavy baking</div>
+                </div>
+              </label>
+
+              <label class="food-check-card checked">
+                <input type="checkbox" value="Water & Egg Boiling" checked>
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Water &amp; Tea Boiling</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Frequent water boiling</div>
+                </div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Long Simmer Meals">
+                <div>
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">Long Simmer Meals</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Extends 1+ hours continuous burner</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- STEP 4: Extra Gas Appliances & Usages -->
+          <div class="wizard-step-pane" id="wizardStepPane4" style="display: none;">
+            <label class="wizard-section-lbl">Do you use gas for any of these extra activities?</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;" id="wizAppliancesGrid">
+              <label class="food-check-card">
+                <input type="checkbox" value="Bathing & Shower Water Heating">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Bathing &amp; Shower Water Heating</div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Regular Cake/Bread Baking">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Regular Cake/Bread Baking</div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Bulk Commercial Frying">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Bulk Commercial Frying</div>
+              </label>
+
+              <label class="food-check-card">
+                <input type="checkbox" value="Commercial Catering / Restaurant Use">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Commercial Catering / Restaurant Use</div>
+              </label>
+
+              <label class="food-check-card" style="grid-column: span 2;">
+                <input type="checkbox" value="Outdoor BBQ / Event Cooking">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Outdoor BBQ / Event Cooking</div>
+              </label>
+            </div>
+
+            <div class="stepper-counter-card">
+              <label style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Average Weekly Extra Usage Hours (If any)</label>
+              <input type="number" step="0.5" class="form-input" id="wizExtraHours" placeholder="e.g. 4" value="0" style="margin-top: 8px;">
+              <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Estimated total hours gas is used per week for non-cooking appliances (water heaters, gas ovens, outdoor broilers).</span>
+            </div>
+          </div>
+
+          <!-- STEP 5: Efficiency Habits & Lifestyle -->
+          <div class="wizard-step-pane" id="wizardStepPane5" style="display: none;">
+            <label class="toggle-card-large checked">
+              <input type="checkbox" id="wizUsePressureCooker" checked>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Use Pressure Cooker?</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Saves up to 25% fuel on beans &amp; tough grains.</div>
+              </div>
+            </label>
+
+            <label class="toggle-card-large checked">
+              <input type="checkbox" id="wizUseSavingLids" checked>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Use Energy-Saving Lids &amp; Pans?</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Traps heat effectively, cutting cooking time.</div>
+              </div>
+            </label>
+
+            <label class="toggle-card-large checked">
+              <input type="checkbox" id="wizCookInBatches" checked>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Cook in Batches / Bulk Prep?</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Reduces preheating gas loss across separate sessions.</div>
+              </div>
+            </label>
+
+            <label class="toggle-card-large">
+              <input type="checkbox" id="wizReheatOnStove">
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Reheat Food Often on Stove?</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Adds ~11% extra burner load daily.</div>
+              </div>
+            </label>
+
+            <!-- AI Multi-Factor Estimation Ready Notice -->
+            <div style="display: flex; align-items: flex-start; gap: 12px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 12px; padding: 14px; margin-top: 14px;">
+              <span style="font-size: 20px;">🛡️</span>
+              <div>
+                <strong style="color: #38bdf8; font-size: 13.5px;">AI Multi-Factor Estimation Ready:</strong>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                  Our machine-learning algorithm calculates your gas consumption rate by integrating all 5 steps into a weighted regression scoring model.
+                </p>
+              </div>
             </div>
           </div>
 
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary close-modal-btn">Cancel</button>
-          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 24px;">Save &amp; Recalibrate Model</button>
+
+        <!-- Wizard Navigation Footer -->
+        <div class="wizard-footer">
+          <button type="button" class="wizard-back-btn" id="wizBackBtn" disabled>
+            &lt; Back
+          </button>
+          <button type="button" class="wizard-next-btn" id="wizNextBtn">
+            Next Step &gt;
+          </button>
         </div>
       </form>
     </div>

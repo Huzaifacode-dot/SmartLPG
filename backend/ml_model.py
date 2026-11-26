@@ -124,6 +124,101 @@ def predict_consumption(family_size, meals_per_day, daily_cooking_hours, diet_ty
     final_burn_rate = max(0.12, round(base_rate * flame_multiplier * eff_multiplier, 3))
     return final_burn_rate
 
+def predict_multi_factor_consumption(
+    adults_count=2,
+    children_count=2,
+    meals_per_day=3,
+    cooking_days_per_week=7,
+    avg_meal_minutes=20,
+    flame_intensity="Medium Flame",
+    foods_cooked=None,
+    extra_appliances=None,
+    extra_weekly_hours=0.0,
+    use_pressure_cooker=True,
+    use_saving_lids=True,
+    cook_in_batches=True,
+    reheat_on_stove=False,
+    cylinder_capacity=14.2
+):
+    """
+    Multi-Factor LPG Consumption Predictor across all 5 Detail steps:
+    1. Cylinder & Refill capacity
+    2. Household Adults & Children composition
+    3. Cooking frequency, weekly cadence, duration, flame, and food types
+    4. Extra gas appliances & weekly auxiliary hours
+    5. Kitchen energy-efficiency habits & lifestyle practices
+    """
+    model = get_model()
+    family_size = max(1, int(adults_count or 0) + int(children_count or 0))
+    
+    # Active cooking hours per day
+    try:
+        if isinstance(avg_meal_minutes, str):
+            # Parse '20 Minutes (Quick)' or '30'
+            import re
+            m = re.search(r'\d+', avg_meal_minutes)
+            mins = int(m.group(0)) if m else 20
+        else:
+            mins = int(avg_meal_minutes or 20)
+    except Exception:
+        mins = 20
+        
+    days_per_week = min(7, max(1, int(cooking_days_per_week or 7)))
+    meals = min(5, max(1, int(meals_per_day or 3)))
+    cooking_hours = round((meals * (mins / 60.0)) * (days_per_week / 7.0), 2)
+    cooking_hours = max(0.5, min(6.0, cooking_hours))
+    
+    # Analyze food types
+    if isinstance(foods_cooked, list):
+        foods_list = [str(f).lower() for f in foods_cooked]
+    else:
+        foods_list = [str(f).strip().lower() for f in str(foods_cooked or '').split(',') if f.strip()]
+        
+    heavy_items = sum(1 for f in foods_list if any(k in f for k in ['bean', 'stew', 'simmer', 'broth', 'bake', 'oven', 'tandoor']))
+    diet_score = 2 if heavy_items >= 2 else (1 if len(foods_list) >= 2 else 0)
+    
+    features = pd.DataFrame([{
+        "family_size": family_size,
+        "meals_per_day": meals,
+        "daily_cooking_hours": cooking_hours,
+        "diet_type": diet_score,
+        "season_factor": 1.0
+    }])
+    base_burn = float(model.predict(features)[0])
+    
+    # Flame intensity multiplier
+    flame_str = str(flame_intensity).lower()
+    if 'light' in flame_str:
+        flame_mult = 0.86
+    elif 'heavy' in flame_str or 'high' in flame_str:
+        flame_mult = 1.20
+    else:
+        flame_mult = 1.0
+        
+    # Extra auxiliary appliance burn
+    extra_daily_burn = 0.0
+    try:
+        hrs = float(extra_weekly_hours or 0.0)
+        extra_daily_burn = (hrs / 7.0) * 0.075
+    except Exception:
+        pass
+        
+    # Efficiency bonuses and penalties
+    eff_savings = 0.0
+    if bool(use_pressure_cooker):
+        eff_savings += 0.14
+    if bool(use_saving_lids):
+        eff_savings += 0.09
+    if bool(cook_in_batches):
+        eff_savings += 0.06
+    if bool(reheat_on_stove):
+        eff_savings -= 0.08 # penalty
+        
+    eff_multiplier = max(0.68, 1.0 - eff_savings)
+    
+    final_burn = max(0.12, round((base_burn * flame_mult * eff_multiplier) + extra_daily_burn, 3))
+    return final_burn
+
 def compute_refill_analytics(current_gas_kg, burn_rate_kg_per_day, lead_time_days=3, cylinder_capacity=14.2, refill_price_inr=858.00):
     """
     Computes depletion timeline, booking recommendation, budget metrics, and alert state.

@@ -55,9 +55,38 @@ def init_db():
         date_of_last_refill TEXT DEFAULT '2026-10-12',
         current_refill_price REAL DEFAULT 858.00,
         lead_time_days INTEGER NOT NULL,
+        cooking_days_per_week INTEGER DEFAULT 7,
+        avg_time_per_meal TEXT DEFAULT '20 Minutes (Quick)',
+        flame_intensity TEXT DEFAULT 'Medium Flame',
+        frequently_cooked_foods TEXT DEFAULT 'Rice,Soup,Stew,Water & Tea Boiling',
+        extra_appliances TEXT DEFAULT '',
+        extra_weekly_hours REAL DEFAULT 0.0,
+        use_pressure_cooker INTEGER DEFAULT 1,
+        use_saving_lids INTEGER DEFAULT 1,
+        cook_in_batches INTEGER DEFAULT 1,
+        reheat_on_stove INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    # Ensure all multi-factor details columns exist in existing database instances
+    cursor.execute("PRAGMA table_info(user_profile)")
+    existing_cols = {col[1] for col in cursor.fetchall()}
+    new_cols = [
+        ("cooking_days_per_week", "INTEGER DEFAULT 7"),
+        ("avg_time_per_meal", "TEXT DEFAULT '20 Minutes (Quick)'"),
+        ("flame_intensity", "TEXT DEFAULT 'Medium Flame'"),
+        ("frequently_cooked_foods", "TEXT DEFAULT 'Rice,Soup,Stew,Water & Tea Boiling'"),
+        ("extra_appliances", "TEXT DEFAULT ''"),
+        ("extra_weekly_hours", "REAL DEFAULT 0.0"),
+        ("use_pressure_cooker", "INTEGER DEFAULT 1"),
+        ("use_saving_lids", "INTEGER DEFAULT 1"),
+        ("cook_in_batches", "INTEGER DEFAULT 1"),
+        ("reheat_on_stove", "INTEGER DEFAULT 0"),
+    ]
+    for col_name, col_def in new_cols:
+        if col_name not in existing_cols:
+            cursor.execute(f"ALTER TABLE user_profile ADD COLUMN {col_name} {col_def}")
 
     # Current Cylinder Status Table
     cursor.execute('''

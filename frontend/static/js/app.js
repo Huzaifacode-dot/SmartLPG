@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAllData();
   setupEventListeners();
   setupWhatIfSimulator();
+  initWizardInteractions();
+  goToWizardStep(1);
   
   // Refresh cylinder telemetry every 15 seconds
   setInterval(refreshTelemetry, 15000);
@@ -106,29 +108,67 @@ async function fetchProfile() {
     setVal('profileDistributorPhone', data.distributor_phone || '+91 80 2520 1199');
     setVal('profileLeadTime', data.lead_time_days || 3);
     
-    // Fill Family Modal
-    setVal('famHouseholdClassification', data.household_classification || 'Family Household');
-    setVal('famTotalMembers', data.family_size || 4);
-    setVal('famAdultsCount', data.adults_count || 2);
-    setVal('famChildrenCount', data.children_count || 2);
-    setVal('famCookingHours', data.daily_cooking_hours || 2.8);
-    setVal('famMealsPerDay', data.cooking_meals_per_day || 3);
-    setVal('famCylinderCapacity', data.cylinder_capacity || 14.2);
-    setVal('famLastRefillDate', data.date_of_last_refill || '2026-10-12');
-    setVal('famRefillPrice', data.current_refill_price || 858.00);
+    // Fill 5-Step Details Wizard Fields (from Screenshots)
+    if (data.cylinder_capacity) {
+      setVal('wizCylinderCapacity', data.cylinder_capacity);
+      document.querySelectorAll('#capacityPillGroup .cap-pill').forEach(b => {
+        if (parseFloat(b.getAttribute('data-cap')) === parseFloat(data.cylinder_capacity)) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+    }
+    if (data.date_of_last_refill) setVal('wizLastRefillDate', data.date_of_last_refill);
+    if (data.current_refill_price) setVal('wizRefillPrice', data.current_refill_price);
 
-    // Update classification cards active state
-    const currentClass = data.household_classification || 'Family Household';
-    document.querySelectorAll('#classificationGrid .classification-card').forEach(card => {
-      if (card.getAttribute('data-classification') === currentClass) {
-        card.classList.add('active');
-      } else {
-        card.classList.remove('active');
+    if (data.household_classification) {
+      setVal('wizClassification', data.household_classification);
+      document.querySelectorAll('#wizClassificationGroup .class-card-item').forEach(c => {
+        if (c.getAttribute('data-class') === data.household_classification) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+    }
+    if (data.adults_count) {
+      setVal('wizAdultsCount', data.adults_count);
+      setTxt('wizAdultsCountVal', data.adults_count);
+    }
+    if (data.children_count !== undefined) {
+      setVal('wizChildrenCount', data.children_count);
+      setTxt('wizChildrenCountVal', data.children_count);
+    }
+    if (data.cooking_meals_per_day) setVal('wizMealsPerDay', data.cooking_meals_per_day);
+    if (data.cooking_days_per_week) setVal('wizCookingDays', data.cooking_days_per_week);
+    if (data.avg_time_per_meal) setVal('wizAvgTimeMeal', data.avg_time_per_meal);
+    if (data.flame_intensity) {
+      setVal('wizFlameIntensity', data.flame_intensity);
+      document.querySelectorAll('#wizFlameGroup .cap-pill').forEach(b => {
+        if (b.getAttribute('data-flame') === data.flame_intensity) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+    }
+    if (data.extra_weekly_hours !== undefined) setVal('wizExtraHours', data.extra_weekly_hours);
+    const setWizChecked = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.checked = Boolean(val);
+        const card = el.closest('.toggle-card-large');
+        if (card) {
+          if (el.checked) card.classList.add('checked');
+          else card.classList.remove('checked');
+        }
       }
-    });
-
-    // Update purpose buttons
-    selectPurpose(data.usage_purpose || 'Household');
+    };
+    if (data.use_pressure_cooker !== undefined) setWizChecked('wizUsePressureCooker', data.use_pressure_cooker);
+    if (data.use_saving_lids !== undefined) setWizChecked('wizUseSavingLids', data.use_saving_lids);
+    if (data.cook_in_batches !== undefined) setWizChecked('wizCookInBatches', data.cook_in_batches);
+    if (data.reheat_on_stove !== undefined) setWizChecked('wizReheatOnStove', data.reheat_on_stove);
 
     // Sync simulator inputs if present
     const simFam = document.getElementById('simFamilySize');
@@ -196,6 +236,7 @@ function renderCylinderCard(cyl) {
   }
   
   setTxt('gasPercentageVal', `${pct}%`);
+  setTxt('navGasLeft', `${pct}%`);
   setTxt('gasWeightVal', `${gasWeight} kg Net LPG`);
   setTxt('grossWeightVal', `${grossWeight} kg`);
   setTxt('tareWeightVal', `${tareWeight} kg`);
@@ -284,6 +325,33 @@ function renderTrackingSection(booking) {
   const noBookingBox = document.getElementById('noActiveBookingState');
   const activeBookingBox = document.getElementById('activeBookingState');
   
+  // Handle 25-Day Regulatory Inter-Booking Lock Notice
+  const lockNotice = document.getElementById('bookingLockNotice');
+  const modalLockNotice = document.getElementById('bookingModalLockNotice');
+  const confirmBtn = document.getElementById('confirmBookingBtn');
+  const elig = booking ? booking.eligibility : null;
+
+  if (elig && !elig.can_book) {
+    if (lockNotice) lockNotice.style.display = 'block';
+    if (modalLockNotice) modalLockNotice.style.display = 'block';
+    setTxt('lockEligibleDate', elig.eligible_date);
+    setTxt('modalLockEligibleDate', elig.eligible_date);
+    setTxt('lockDaysLeft', elig.days_remaining);
+    setTxt('modalLockDaysLeft', elig.days_remaining);
+
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = `🔒 Refill Locked (${elig.days_remaining}d remaining)`;
+    }
+  } else {
+    if (lockNotice) lockNotice.style.display = 'none';
+    if (modalLockNotice) modalLockNotice.style.display = 'none';
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = `Confirm & Book Refill`;
+    }
+  }
+
   if (!booking || !booking.booking_id) {
     if (noBookingBox) noBookingBox.style.display = 'block';
     if (activeBookingBox) activeBookingBox.style.display = 'none';
@@ -966,13 +1034,34 @@ function setupEventListeners() {
         body: JSON.stringify({ provider, payment_mode: payment })
       });
       const data = await res.json();
+      if (!res.ok) {
+        showToast(`❌ ${data.error || 'Refill booking locked'}`);
+        await fetchActiveBooking();
+        return;
+      }
       closeModal('bookingModal');
       showToast(`🎉 Refill Booked! ID: ${data.booking.booking_id}`);
       await fetchActiveBooking();
+      await fetchCylinderStatus();
       await fetchAlerts();
     } catch (err) {
       console.error('Error creating booking:', err);
     }
+  });
+
+  // Landing Page Start Prediction CTA
+  document.getElementById('heroStartPredictionBtn')?.addEventListener('click', () => {
+    goToWizardStep(1);
+    openModal('familyModal');
+  });
+
+  // Fast forward 25 days demo button
+  document.getElementById('fastForwardBookingBtn')?.addEventListener('click', fastForward25DaysDemo);
+
+  // 5-Step Details Wizard Form Submission
+  document.getElementById('wizardDetailsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await saveWizardDetails();
   });
   
   // Profile Update Form (Registered User & Gas Provider Details)
@@ -1073,4 +1162,293 @@ function showToast(message) {
     toast.style.transform = 'translateY(10px)';
     setTimeout(() => toast.remove(), 300);
   }, 4000);
+}
+
+// ==========================================
+// 5-STEP DETAILS WIZARD LOGIC (MULTI-FACTOR ML MODEL)
+// ==========================================
+
+const wizardStepMeta = {
+  1: {
+    title: 'Cylinder & Refill Details',
+    subtitle: 'Select cylinder capacity, refill cost, and date of last refill.',
+    progress: '20%'
+  },
+  2: {
+    title: 'Household Size & Composition',
+    subtitle: 'How many adults and children share this gas cylinder?',
+    progress: '40%'
+  },
+  3: {
+    title: 'Cooking Habits & Food Types',
+    subtitle: 'Frequency, duration, and specific foods cooked routinely.',
+    progress: '60%'
+  },
+  4: {
+    title: 'Extra Gas Appliances & Usages',
+    subtitle: 'Water heating, commercial cooking, or outdoor gas appliances.',
+    progress: '80%'
+  },
+  5: {
+    title: 'Efficiency Habits & Lifestyle',
+    subtitle: 'Energy saving practices and meal preparation behaviors.',
+    progress: '100%'
+  }
+};
+
+let currentWizardStep = 1;
+
+function goToWizardStep(step) {
+  if (step < 1) step = 1;
+  if (step > 5) step = 5;
+  currentWizardStep = step;
+
+  const meta = wizardStepMeta[step];
+  setTxt('wizardStepNum', step);
+  setTxt('wizardStepTitle', meta.title);
+  setTxt('wizardStepSubtitle', meta.subtitle);
+
+  const fill = document.getElementById('wizardProgressFill');
+  if (fill) fill.style.width = meta.progress;
+
+  for (let s = 1; s <= 5; s++) {
+    const pane = document.getElementById(`wizardStepPane${s}`);
+    if (pane) pane.style.display = s === step ? 'block' : 'none';
+  }
+
+  const backBtn = document.getElementById('wizBackBtn');
+  if (backBtn) {
+    backBtn.disabled = (step === 1);
+  }
+
+  const nextBtn = document.getElementById('wizNextBtn');
+  if (nextBtn) {
+    if (step === 5) {
+      nextBtn.innerHTML = 'Calculate & Save Prediction ➔';
+      nextBtn.className = 'wizard-next-btn btn-primary';
+    } else {
+      nextBtn.innerHTML = 'Next Step &gt;';
+      nextBtn.className = 'wizard-next-btn';
+    }
+  }
+}
+
+function adjustWizCounter(type, delta) {
+  if (type === 'adults') {
+    const input = document.getElementById('wizAdultsCount');
+    let val = parseInt(input?.value || 2, 10) + delta;
+    if (val < 1) val = 1;
+    if (val > 20) val = 20;
+    if (input) input.value = val;
+    setTxt('wizAdultsCountVal', val);
+  } else if (type === 'children') {
+    const input = document.getElementById('wizChildrenCount');
+    let val = parseInt(input?.value || 0, 10) + delta;
+    if (val < 0) val = 0;
+    if (val > 20) val = 20;
+    if (input) input.value = val;
+    setTxt('wizChildrenCountVal', val);
+  }
+}
+window.adjustWizCounter = adjustWizCounter;
+
+function initWizardInteractions() {
+  // Step 1: Capacity Pills
+  document.querySelectorAll('#capacityPillGroup .cap-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#capacityPillGroup .cap-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cap = btn.getAttribute('data-cap');
+      setVal('wizCylinderCapacity', cap);
+      const customCheck = document.getElementById('wizCustomCapCheck');
+      if (customCheck) customCheck.checked = false;
+      const customBox = document.getElementById('wizCustomCapBox');
+      if (customBox) customBox.style.display = 'none';
+    });
+  });
+
+  // Step 1: Custom Capacity Checkbox
+  const customCheck = document.getElementById('wizCustomCapCheck');
+  const customBox = document.getElementById('wizCustomCapBox');
+  const customInput = document.getElementById('wizCustomCapInput');
+  customCheck?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      if (customBox) customBox.style.display = 'block';
+      document.querySelectorAll('#capacityPillGroup .cap-pill').forEach(b => b.classList.remove('active'));
+      if (customInput && customInput.value) {
+        setVal('wizCylinderCapacity', customInput.value);
+      }
+    } else {
+      if (customBox) customBox.style.display = 'none';
+      const defPill = document.querySelector('#capacityPillGroup .cap-pill[data-cap="14.2"]');
+      if (defPill) {
+        defPill.classList.add('active');
+        setVal('wizCylinderCapacity', '14.2');
+      }
+    }
+  });
+  customInput?.addEventListener('input', (e) => {
+    if (e.target.value) setVal('wizCylinderCapacity', e.target.value);
+  });
+
+  // Step 2: Household Classification Cards
+  document.querySelectorAll('#wizClassificationGroup .class-card-item').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#wizClassificationGroup .class-card-item').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      const cls = card.getAttribute('data-class');
+      setVal('wizClassification', cls);
+      const adults = card.getAttribute('data-adults');
+      const children = card.getAttribute('data-children');
+      if (adults) {
+        setVal('wizAdultsCount', adults);
+        setTxt('wizAdultsCountVal', adults);
+      }
+      if (children !== null && children !== undefined) {
+        setVal('wizChildrenCount', children);
+        setTxt('wizChildrenCountVal', children);
+      }
+    });
+  });
+
+  // Step 3: Cooking Flame Intensity
+  document.querySelectorAll('#wizFlameGroup .cap-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#wizFlameGroup .cap-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const flame = btn.getAttribute('data-flame');
+      setVal('wizFlameIntensity', flame);
+    });
+  });
+
+  // Step 3 & 4: Food & Appliance Checkbox Cards
+  document.querySelectorAll('.food-check-card').forEach(label => {
+    const check = label.querySelector('input[type="checkbox"]');
+    if (check) {
+      check.addEventListener('change', () => {
+        if (check.checked) label.classList.add('checked');
+        else label.classList.remove('checked');
+      });
+    }
+  });
+
+  // Step 5: Large Toggle Cards
+  document.querySelectorAll('.toggle-card-large').forEach(label => {
+    const check = label.querySelector('input[type="checkbox"]');
+    if (check) {
+      check.addEventListener('change', () => {
+        if (check.checked) label.classList.add('checked');
+        else label.classList.remove('checked');
+      });
+    }
+  });
+
+  // Wizard Navigation Buttons
+  document.getElementById('wizBackBtn')?.addEventListener('click', () => {
+    if (currentWizardStep > 1) {
+      goToWizardStep(currentWizardStep - 1);
+    }
+  });
+
+  document.getElementById('wizNextBtn')?.addEventListener('click', () => {
+    if (currentWizardStep < 5) {
+      goToWizardStep(currentWizardStep + 1);
+    } else {
+      saveWizardDetails();
+    }
+  });
+}
+
+// Save Multi-Factor Wizard Details and Calibrate Prediction
+async function saveWizardDetails() {
+  const cap = parseFloat(document.getElementById('wizCylinderCapacity')?.value || 14.2);
+  const lastRefillDate = document.getElementById('wizLastRefillDate')?.value || '';
+  const refillPrice = parseFloat(document.getElementById('wizRefillPrice')?.value || 858.0);
+  const classification = document.getElementById('wizClassification')?.value || 'Family Household';
+  const adults = parseInt(document.getElementById('wizAdultsCount')?.value || 2, 10);
+  const children = parseInt(document.getElementById('wizChildrenCount')?.value || 2, 10);
+  const familySize = adults + children;
+  const mealsPerDay = parseInt(document.getElementById('wizMealsPerDay')?.value || 3, 10);
+  const cookingDays = parseInt(document.getElementById('wizCookingDays')?.value || 7, 10);
+  const avgTime = parseInt(document.getElementById('wizAvgTimeMeal')?.value || 20, 10);
+  const flameIntensity = document.getElementById('wizFlameIntensity')?.value || 'Medium Flame';
+
+  // Frequently cooked foods
+  const foods = [];
+  document.querySelectorAll('#wizFoodsGrid input[type="checkbox"]:checked').forEach(c => foods.push(c.value));
+
+  // Extra appliances
+  const appliances = [];
+  document.querySelectorAll('#wizAppliancesGrid input[type="checkbox"]:checked').forEach(c => appliances.push(c.value));
+  const extraHours = parseFloat(document.getElementById('wizExtraHours')?.value || 0);
+
+  // Efficiency habits
+  const pressureCooker = Boolean(document.getElementById('wizUsePressureCooker')?.checked);
+  const savingLids = Boolean(document.getElementById('wizUseSavingLids')?.checked);
+  const batchCooking = Boolean(document.getElementById('wizCookInBatches')?.checked);
+  const reheatStove = Boolean(document.getElementById('wizReheatOnStove')?.checked);
+
+  // Compute cooking hours per day
+  const dailyCookingHours = parseFloat(((mealsPerDay * avgTime) / 60 * (cookingDays / 7)).toFixed(2));
+
+  const payload = {
+    cylinder_capacity: cap,
+    date_of_last_refill: lastRefillDate,
+    current_refill_price: refillPrice,
+    household_classification: classification,
+    adults_count: adults,
+    children_count: children,
+    family_size: familySize,
+    cooking_meals_per_day: mealsPerDay,
+    cooking_days_per_week: cookingDays,
+    avg_time_per_meal: avgTime,
+    daily_cooking_hours: dailyCookingHours,
+    flame_intensity: flameIntensity,
+    frequently_cooked_foods: foods,
+    extra_appliances: appliances,
+    extra_weekly_hours: extraHours,
+    use_pressure_cooker: pressureCooker,
+    use_saving_lids: savingLids,
+    cook_in_batches: batchCooking,
+    reheat_on_stove: reheatStove
+  };
+
+  try {
+    const res = await fetch('/api/profile/details-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    closeModal('familyModal');
+    showToast('🎯 Multi-Factor Details Saved! ML model recalibrated.');
+    await fetchProfile();
+    await fetchCylinderStatus();
+
+    // Trigger simulator slider change to recompute what-if
+    const simFam = document.getElementById('simFamilySize');
+    if (simFam) {
+      simFam.value = familySize;
+      simFam.dispatchEvent(new Event('input'));
+    }
+  } catch (err) {
+    console.error('Error saving wizard details:', err);
+    showToast('Failed to save details. Please try again.');
+  }
+}
+
+// Fast Forward 25 Days Demo Action
+async function fastForward25DaysDemo() {
+  try {
+    const res = await fetch('/api/booking/fast-forward-25-days', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('⏩ Fast-forwarded 26 days! 25-day refill lock is now lifted.');
+      await fetchActiveBooking();
+      await fetchCylinderStatus();
+      await fetchAlerts();
+    }
+  } catch (err) {
+    console.error('Error fast-forwarding 25 days:', err);
+  }
 }
