@@ -69,20 +69,6 @@ async function loadAllData() {
   ]);
 }
 
-// Helper for purpose selector
-function selectPurpose(purpose) {
-  setVal('famUsagePurpose', purpose);
-  const houseBtn = document.getElementById('purposeHouseholdBtn');
-  const commBtn = document.getElementById('purposeCommercialBtn');
-  if (purpose === 'Commercial') {
-    commBtn?.classList.add('active');
-    houseBtn?.classList.remove('active');
-  } else {
-    houseBtn?.classList.add('active');
-    commBtn?.classList.remove('active');
-  }
-}
-
 // Fetch Profile
 async function fetchProfile() {
   try {
@@ -93,6 +79,8 @@ async function fetchProfile() {
     
     // Header & Meta Elements
     setTxt('agencyDisplay', data.distributor_name);
+    setVal('bookConsumerInput', data.consumer_number);
+    setVal('bookProviderSelect', data.lpg_provider);
     
     // Fill Profile Modal (Registered User & Gas Provider Details)
     setTxt('profileSummaryName', data.primary_name);
@@ -110,16 +98,29 @@ async function fetchProfile() {
     setVal('profileDistributorPhone', data.distributor_phone || '+91 80 2520 1199');
     setVal('profileLeadTime', data.lead_time_days || 3);
     
-    // Fill 5-Step Details Wizard Fields (from Screenshots)
+    // Fill 5-Step Details Wizard Fields
     if (data.cylinder_capacity) {
       setVal('wizCylinderCapacity', data.cylinder_capacity);
+      let matchedPill = false;
       document.querySelectorAll('#capacityPillGroup .cap-pill').forEach(b => {
         if (parseFloat(b.getAttribute('data-cap')) === parseFloat(data.cylinder_capacity)) {
           b.classList.add('active');
+          matchedPill = true;
         } else {
           b.classList.remove('active');
         }
       });
+      const customCheck = document.getElementById('wizCustomCapCheck');
+      const customBox = document.getElementById('wizCustomCapBox');
+      const customInput = document.getElementById('wizCustomCapInput');
+      if (!matchedPill && customCheck && customBox && customInput) {
+        customCheck.checked = true;
+        customBox.style.display = 'block';
+        customInput.value = data.cylinder_capacity;
+      } else if (customCheck && customBox) {
+        customCheck.checked = false;
+        customBox.style.display = 'none';
+      }
     }
     if (data.date_of_last_refill) setVal('wizLastRefillDate', data.date_of_last_refill);
     if (data.current_refill_price) setVal('wizRefillPrice', data.current_refill_price);
@@ -144,7 +145,10 @@ async function fetchProfile() {
     }
     if (data.cooking_meals_per_day) setVal('wizMealsPerDay', data.cooking_meals_per_day);
     if (data.cooking_days_per_week) setVal('wizCookingDays', data.cooking_days_per_week);
-    if (data.avg_time_per_meal) setVal('wizAvgTimeMeal', data.avg_time_per_meal);
+    if (data.avg_time_per_meal) {
+      const parsedMins = parseInt(String(data.avg_time_per_meal), 10);
+      if (!isNaN(parsedMins)) setVal('wizAvgTimeMeal', String(parsedMins));
+    }
     if (data.flame_intensity) {
       setVal('wizFlameIntensity', data.flame_intensity);
       document.querySelectorAll('#wizFlameGroup .cap-pill').forEach(b => {
@@ -152,6 +156,32 @@ async function fetchProfile() {
           b.classList.add('active');
         } else {
           b.classList.remove('active');
+        }
+      });
+    }
+    if (data.frequently_cooked_foods !== undefined) {
+      const savedFoods = String(data.frequently_cooked_foods || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      document.querySelectorAll('#wizFoodsGrid .food-check-card').forEach(card => {
+        const cb = card.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = savedFoods.includes(cb.value);
+          card.classList.toggle('checked', cb.checked);
+        }
+      });
+    }
+    if (data.extra_appliances !== undefined) {
+      const savedApps = String(data.extra_appliances || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      document.querySelectorAll('#wizAppliancesGrid .food-check-card').forEach(card => {
+        const cb = card.querySelector('input[type="checkbox"]');
+        if (cb) {
+          cb.checked = savedApps.includes(cb.value);
+          card.classList.toggle('checked', cb.checked);
         }
       });
     }
@@ -361,7 +391,7 @@ function renderTrackingSection(booking) {
   }
   
   if (noBookingBox) noBookingBox.style.display = 'none';
-  if (activeBookingBox) activeBookingBox.style.display = 'block';
+  if (activeBookingBox) activeBookingBox.style.display = 'flex';
   
   setTxt('trackBookingIdVal', booking.booking_id);
   setTxt('trackEstDeliveryVal', booking.estimated_delivery_date);
@@ -388,7 +418,8 @@ function renderTrackingSection(booking) {
       advanceBtn.disabled = false;
     } else {
       const stepNames = ['Confirm Order', 'Dispatch Cylinder', 'Out for Delivery', 'Deliver & Mount Cylinder'];
-      advanceBtn.textContent = `▶ Advance to: ${stepNames[currentStep - 1]}`;
+      const stepIdx = Math.min(stepNames.length - 1, Math.max(0, currentStep - 1));
+      advanceBtn.textContent = `▶ Advance to: ${stepNames[stepIdx]}`;
       advanceBtn.disabled = false;
     }
   }
@@ -396,10 +427,22 @@ function renderTrackingSection(booking) {
 
 // Advance Booking Step (Simulation)
 async function advanceTrackingStatus() {
-  if (!activeBooking || !activeBooking.booking_id) return;
+  if (!activeBooking || !activeBooking.booking_id) {
+    await fetchActiveBooking();
+    if (!activeBooking || !activeBooking.booking_id) {
+      showToast('No active booking found to advance.');
+      return;
+    }
+  }
+  const advanceBtn = document.getElementById('advanceStatusBtn');
+  if (advanceBtn) advanceBtn.disabled = true;
   try {
     const res = await fetch(`/api/booking/advance-step/${activeBooking.booking_id}`, { method: 'POST' });
     const data = await res.json();
+    if (!res.ok) {
+      showToast(`❌ ${data.error || 'Could not advance delivery status'}`);
+      return;
+    }
     if (data.reset) {
       showToast('Refill cycle finished! Demo restarted to Step 1.');
     } else {
@@ -411,6 +454,9 @@ async function advanceTrackingStatus() {
     await fetchAlerts();
   } catch (err) {
     console.error('Error advancing tracking:', err);
+    showToast('❌ Could not update delivery status. Please check connection.');
+  } finally {
+    if (advanceBtn) advanceBtn.disabled = false;
   }
 }
 
@@ -963,47 +1009,12 @@ function setupEventListeners() {
   // Modals
   document.getElementById('quickBookRefillBtn')?.addEventListener('click', () => openModal('bookingModal'));
   document.getElementById('openProfileModalBtn')?.addEventListener('click', () => openModal('profileModal'));
-  document.getElementById('openFamilyModalBtn')?.addEventListener('click', () => openModal('familyModal'));
+  document.getElementById('openFamilyModalBtn')?.addEventListener('click', () => {
+    goToWizardStep(1);
+    openModal('familyModal');
+  });
   document.getElementById('alertsBellBtn')?.addEventListener('click', () => openModal('alertsModal'));
   document.getElementById('openAuditReportBtn')?.addEventListener('click', populateAndOpenAuditReport);
-  
-  // Classification Cards Selection
-  document.querySelectorAll('#classificationGrid .classification-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#classificationGrid .classification-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      const classification = card.getAttribute('data-classification');
-      setVal('famHouseholdClassification', classification);
-      
-      const purpose = card.getAttribute('data-purpose');
-      if (purpose) selectPurpose(purpose);
-      
-      const members = card.getAttribute('data-members');
-      if (members) setVal('famTotalMembers', members);
-      
-      const adults = card.getAttribute('data-adults');
-      if (adults) setVal('famAdultsCount', adults);
-      
-      const children = card.getAttribute('data-children');
-      if (children) setVal('famChildrenCount', children);
-      
-      const cap = card.getAttribute('data-capacity');
-      if (cap) setVal('famCylinderCapacity', cap);
-    });
-  });
-
-  // Purpose Pills
-  document.getElementById('purposeHouseholdBtn')?.addEventListener('click', () => selectPurpose('Household'));
-  document.getElementById('purposeCommercialBtn')?.addEventListener('click', () => selectPurpose('Commercial'));
-
-  // Sync adults + children to total family members
-  const updateFamilyTotal = () => {
-    const adults = parseInt(document.getElementById('famAdultsCount')?.value || 0, 10);
-    const children = parseInt(document.getElementById('famChildrenCount')?.value || 0, 10);
-    setVal('famTotalMembers', adults + children);
-  };
-  document.getElementById('famAdultsCount')?.addEventListener('input', updateFamilyTotal);
-  document.getElementById('famChildrenCount')?.addEventListener('input', updateFamilyTotal);
 
   // Chart Tabs
   document.getElementById('tabChartHistory')?.addEventListener('click', (e) => {
@@ -1036,6 +1047,13 @@ function setupEventListeners() {
       if (e.target === modal) modal.classList.remove('open');
     });
   });
+
+  // Escape key closes open modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+    }
+  });
   
   // One-Click Refill Booking Submit Form
   document.getElementById('bookingForm')?.addEventListener('submit', async (e) => {
@@ -1062,6 +1080,7 @@ function setupEventListeners() {
       await fetchAlerts();
     } catch (err) {
       console.error('Error creating booking:', err);
+      showToast('❌ Could not create booking. Please check connection.');
     }
   });
 
@@ -1102,51 +1121,18 @@ function setupEventListeners() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.status === 'failed') {
+        showToast(`❌ ${data.error || 'Failed to save profile details'}`);
+        return;
+      }
       closeModal('profileModal');
       showToast('✓ Profile & Gas Provider details updated!');
       await fetchProfile();
       await fetchCylinderStatus();
     } catch (err) {
       console.error('Error updating profile:', err);
-    }
-  });
-
-  // Family Profile Update Form
-  document.getElementById('familyForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const payload = {
-      household_classification: document.getElementById('famHouseholdClassification').value,
-      usage_purpose: document.getElementById('famUsagePurpose').value,
-      family_size: parseInt(document.getElementById('famTotalMembers').value || 4, 10),
-      adults_count: parseInt(document.getElementById('famAdultsCount').value || 2, 10),
-      children_count: parseInt(document.getElementById('famChildrenCount').value || 2, 10),
-      daily_cooking_hours: parseFloat(document.getElementById('famCookingHours').value || 2.8),
-      cooking_meals_per_day: parseInt(document.getElementById('famMealsPerDay').value || 3, 10),
-      cylinder_capacity: parseFloat(document.getElementById('famCylinderCapacity').value || 14.2),
-      date_of_last_refill: document.getElementById('famLastRefillDate').value,
-      current_refill_price: parseFloat(document.getElementById('famRefillPrice').value || 858.00)
-    };
-    
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      closeModal('familyModal');
-      showToast('✓ Family profile updated & ML prediction recalibrated!');
-      await fetchProfile();
-      await fetchCylinderStatus();
-
-      // Trigger simulator slider change to recompute what-if
-      const simFam = document.getElementById('simFamilySize');
-      if (simFam) {
-        simFam.dispatchEvent(new Event('input'));
-      }
-    } catch (err) {
-      console.error('Error updating family details:', err);
+      showToast('❌ Failed to update profile. Please check connection.');
     }
   });
   
@@ -1429,6 +1415,12 @@ async function saveWizardDetails() {
     reheat_on_stove: reheatStove
   };
 
+  const nextBtn = document.getElementById('wizNextBtn');
+  if (nextBtn) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Saving...';
+  }
+
   try {
     const res = await fetch('/api/profile/details-update', {
       method: 'POST',
@@ -1441,6 +1433,7 @@ async function saveWizardDetails() {
       return;
     }
     closeModal('familyModal');
+    goToWizardStep(1);
     showToast('🎯 Multi-Factor Details Saved! ML model recalibrated.');
     await fetchProfile();
     await fetchCylinderStatus();
@@ -1454,6 +1447,15 @@ async function saveWizardDetails() {
   } catch (err) {
     console.error('Error saving wizard details:', err);
     showToast('Failed to save details. Please check connection.');
+  } finally {
+    if (nextBtn) {
+      nextBtn.disabled = false;
+      if (currentWizardStep === 5) {
+        nextBtn.innerHTML = 'Calculate & Save Prediction ➔';
+      } else {
+        nextBtn.innerHTML = 'Next Step &gt;';
+      }
+    }
   }
 }
 
