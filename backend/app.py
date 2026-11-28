@@ -26,6 +26,14 @@ CORS(app)
 init_db()
 
 # ----------------- WEB PAGES & STATIC ASSETS -----------------
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "service": "SmartLPG API",
+        "db_connected": True
+    }), 200
+
 @app.route("/")
 @app.route("/index.html")
 @app.route("/api")

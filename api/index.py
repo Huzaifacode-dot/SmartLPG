@@ -21,42 +21,53 @@ class VercelPathMiddleware:
         qs = environ.get('QUERY_STRING', '')
         path_override = None
 
-        # 1. Parse __vercel_path from query string if present
+        # 1. Parse __vercel_path from query string if present (from /:path* wildcard rewrite)
         if '__vercel_path=' in qs:
             params = urllib.parse.parse_qs(qs, keep_blank_values=True)
             if '__vercel_path' in params:
                 val = params.pop('__vercel_path')[0]
-                if val:
+                if val and val != '/':
                     path_override = '/' + val.lstrip('/')
                 else:
                     path_override = '/'
-                # Clean up query string
-                pairs = []
+                # Clean up query string so Flask receives clean query parameters
+                clean_pairs = []
                 for k, vals in params.items():
                     for v in vals:
-                        pairs.append(f"{urllib.parse.quote(k)}={urllib.parse.quote(v)}")
-                environ['QUERY_STRING'] = '&'.join(pairs)
+                        clean_pairs.append(f"{urllib.parse.quote(k)}={urllib.parse.quote(v)}")
+                environ['QUERY_STRING'] = '&'.join(clean_pairs)
 
-        # 2. Check headers as fallback
+        # 2. Check x-now-route-matches (Vercel attaches route matches here)
+        if not path_override and 'HTTP_X_NOW_ROUTE_MATCHES' in environ:
+            try:
+                matches = urllib.parse.parse_qs(environ['HTTP_X_NOW_ROUTE_MATCHES'])
+                matched_val = matches.get('path', [None])[0] or matches.get('1', [None])[0]
+                if matched_val:
+                    path_override = '/' + matched_val.lstrip('/')
+            except Exception:
+                pass
+
+        # 3. Check standard forwarded path headers as fallback
         if not path_override:
-            orig = (
-                environ.get('HTTP_X_FORWARDED_URI')
+            header_cand = (
+                environ.get('HTTP_X_FORWARDED_PATH')
+                or environ.get('HTTP_X_FORWARDED_URI')
+                or environ.get('HTTP_X_VERCEL_FORWARDED_FOR')
                 or environ.get('HTTP_X_MATCHED_PATH')
                 or environ.get('HTTP_X_VERCEL_MATCHED_PATH')
                 or environ.get('REQUEST_URI')
             )
-            if orig:
-                path_only = orig.split('?')[0]
-                if path_only and path_only not in ('/api/index', '/api/index.py', '/api'):
-                    path_override = path_only
+            if header_cand:
+                cand_path = header_cand.split('?')[0]
+                if cand_path and cand_path not in ('/api/index', '/api/index.py', '/api'):
+                    path_override = cand_path
 
-        # 3. Apply resolved path or default to '/'
+        # 4. Apply resolved path, or fallback to '/' if pointing directly to serverless index
+        curr_p = environ.get('PATH_INFO', '')
         if path_override:
             environ['PATH_INFO'] = path_override
-        else:
-            p = environ.get('PATH_INFO', '')
-            if p in ('/api/index', '/api/index.py', '/api'):
-                environ['PATH_INFO'] = '/'
+        elif curr_p in ('/api/index', '/api/index.py', '/api'):
+            environ['PATH_INFO'] = '/'
 
         return self.wsgi_app(environ, start_response)
 
